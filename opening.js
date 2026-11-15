@@ -1,9 +1,6 @@
-// Editorial entrance and shuffled cover reel share a single three-second timeline.
+// The grey gallery, cover reel and editorial entrance share a 3-second timeline.
 const INTRO_MS = 3000;
 const CROSSFADE_MS = 300;
-
-// The five content groups appear consecutively, but all finish within the
-// same three seconds as the grey cover field's full-screen contraction.
 const REVEALS = [
   ['opening-show-given', 0],
   ['opening-show-family', 420],
@@ -12,7 +9,7 @@ const REVEALS = [
   ['opening-show-navigation', 2050],
 ];
 
-export function createOpening({ page, field, motion, selectSlide, onFinish }) {
+export function createOpening({ page, field, motion, selectSlide, onProgress, onFinish }) {
   const reel = field.querySelector('.opening-reel');
   let generation = 0;
   let frame = 0;
@@ -22,88 +19,106 @@ export function createOpening({ page, field, motion, selectSlide, onFinish }) {
   function finish() {
     if (finished) return;
     finished = true;
-    generation++;
+    ++generation;
     cancelAnimationFrame(frame);
     clearTimeout(completionTimer);
     reel?.remove();
     page.removeAttribute('data-opening');
-    page.classList.remove(...REVEALS.map(([name]) => name), 'opening-gallery-visible');
+    page.classList.remove(...REVEALS.map(([className]) => className), 'opening-gallery-visible');
     onFinish();
   }
 
-  function play(slides) {
+  async function play(slides) {
     if (finished || motion.matches || !reel || !slides.length) {
       finish();
       return;
     }
+
     const token = ++generation;
-    // Slides were shuffled once on page load and are also used by the main
-    // carousel. Thus the intro's final frame is exactly its first gallery view.
+    // Both the cover reel and gallery receive the same randomized slide array.
     const covers = slides.filter(({ project }) => project.cover);
     if (!covers.length) {
       finish();
       return;
     }
 
-    const posters = covers.map((slide, index) => {
+    const posters = covers.map((slide) => {
       const image = new Image();
-      image.className = 'opening-reel-image' + (index === 0 ? ' is-active' : '');
+      image.className = 'opening-reel-image';
       image.alt = '';
       image.draggable = false;
       image.decoding = 'async';
       image.loading = 'eager';
       image.src = slide.project.cover;
-      const orient = () => {
-        image.dataset.orientation = image.naturalWidth > image.naturalHeight ? 'wide' : 'portrait';
-      };
-      if (image.complete && image.naturalWidth) orient();
-      else image.addEventListener('load', orient, { once: true });
       return { image, slide };
     });
-    reel.replaceChildren(...posters.map(({ image }) => image));
 
-    let current = 0;
-    let lastVisible = posters[0];
-    function show(index) {
-      if (index === current) return;
-      const poster = posters[index];
-      // Never replace a loaded cover with an empty/loading image.
-      if (!poster.image.complete || !poster.image.naturalWidth) return;
-      posters[current].image.classList.remove('is-active');
-      poster.image.classList.add('is-active');
-      current = index;
-      lastVisible = poster;
+    // Previously a cover got skipped if its 200ms slot arrived before the
+    // browser decoded it. Decode *every* cover before starting the 3s reel.
+    await Promise.all(posters.map(async ({ image }) => {
+      try {
+        await image.decode();
+      } catch {
+        // A failed image load should not leave the homepage locked forever.
+      }
+      if (image.naturalWidth) {
+        image.dataset.orientation = image.naturalWidth > image.naturalHeight ? 'wide' : 'portrait';
+      }
+    }));
+    if (finished || generation !== token) return;
+
+    const ready = posters.filter(({ image }) => image.naturalWidth > 0);
+    if (!ready.length) {
+      finish();
+      return;
     }
 
-    // Preserve the full-screen first paint so CSS can interpolate its inset.
+    // Every valid project cover has exactly one slot in this shuffled reel.
+    const interval = INTRO_MS / ready.length;
+    ready[0].image.classList.add('is-active');
+    reel.replaceChildren(...ready.map(({ image }) => image));
+    let current = 0;
+
+    function show(index) {
+      if (current === index) return;
+      ready[current].image.classList.remove('is-active');
+      ready[index].image.classList.add('is-active');
+      current = index;
+      onProgress(interval);
+    }
+
+    // Ensure the fullscreen initial geometry is painted before shrinking.
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (finished || token !== generation) return;
+      if (finished || generation !== token) return;
+
       page.dataset.opening = 'shrinking';
       const start = performance.now();
+      onProgress(interval);
 
-      const tick = (now) => {
-        if (finished || token !== generation) return;
+      function tick(now) {
+        if (finished || generation !== token) return;
         const elapsed = Math.min(INTRO_MS, now - start);
+
         for (const [className, at] of REVEALS) {
           if (elapsed >= at) page.classList.add(className);
         }
-        const index = Math.min(posters.length - 1, Math.floor(elapsed / INTRO_MS * posters.length));
-        show(index);
+
+        const targetIndex = Math.min(ready.length - 1, Math.floor(elapsed / interval));
+        if (targetIndex !== current) show(targetIndex);
 
         if (elapsed < INTRO_MS) {
           frame = requestAnimationFrame(tick);
           return;
         }
 
-        // The last frame is selected behind the reel before fading the reel
-        // itself. The gallery cover was already preselected and preloaded.
-        selectSlide(lastVisible.slide);
+        // The last visible frame becomes the first normal gallery cover.
+        selectSlide(ready[current].slide);
         page.dataset.opening = 'settled';
         page.classList.add('opening-gallery-visible');
         completionTimer = setTimeout(() => {
-          if (!finished && token === generation) finish();
+          if (!finished && generation === token) finish();
         }, CROSSFADE_MS + 40);
-      };
+      }
       frame = requestAnimationFrame(tick);
     }));
   }
