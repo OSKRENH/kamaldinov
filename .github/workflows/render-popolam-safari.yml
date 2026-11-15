@@ -1,0 +1,125 @@
+name: Render original Popolam homepage in a coded Safari frame
+
+on:
+  push:
+    paths:
+      - .github/workflows/render-popolam-safari.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout portfolio
+        uses: actions/checkout@v4
+      - name: Checkout Popolam source
+        uses: actions/checkout@v4
+        with:
+          repository: OSKRENH/popolam
+          path: popolam-source
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install rendering tools
+        run: |
+          python -m pip install --quiet playwright pillow
+      - name: Render real homepage and draw Safari window with Pillow
+        run: |
+          python - <<'PY'
+          import sys, time, subprocess
+          from pathlib import Path
+          from PIL import Image, ImageDraw, ImageFont, ImageFilter
+          from playwright.sync_api import sync_playwright
+          import urllib.request
+
+          output = Path('images/pets/popolam-safari-browser.webp')
+          output.parent.mkdir(parents=True, exist_ok=True)
+          server = subprocess.Popen([sys.executable, '-m', 'http.server', '8765', '--bind', '127.0.0.1', '--directory', 'popolam-source/public'], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+          try:
+              for attempt in range(50):
+                  try:
+                      urllib.request.urlopen('http://127.0.0.1:8765/', timeout=2)
+                      break
+                  except Exception:
+                      time.sleep(.15)
+              else:
+                  raise RuntimeError('The Popolam source server did not start.')
+
+              with sync_playwright() as playwright:
+                  try:
+                      browser = playwright.chromium.launch(channel='chrome', headless=True, args=['--no-sandbox'])
+                  except Exception as err:
+                      print('Using Playwright Chromium:', err)
+                      subprocess.run([sys.executable, '-m', 'playwright', 'install', 'chromium'], check=True)
+                      browser = playwright.chromium.launch(headless=True, args=['--no-sandbox'])
+                  page = browser.new_page(viewport={'width': 1600, 'height': 900}, device_scale_factor=1, locale='ru-RU', color_scheme='light')
+                  response = page.goto('http://127.0.0.1:8765/', wait_until='domcontentloaded', timeout=45000)
+                  page.wait_for_selector('#home-title', state='visible', timeout=25000)
+                  page.wait_for_function("document.querySelectorAll('#pack-grid .pack-card').length === 4", timeout=25000)
+                  page.evaluate('document.fonts.ready')
+                  page.wait_for_timeout(600)
+                  page.add_style_tag(content='*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}')
+                  title = page.locator('#home-title').inner_text()
+                  cards = page.locator('#pack-grid .pack-card').count()
+                  assert title.strip() == 'Что выбрать вдвоём?', title
+                  assert cards == 4, cards
+                  print('Screenshot of source checkout:', title, 'cards:', cards, 'http:', response.status if response else None)
+                  raw = page.screenshot(animations='disabled', full_page=False)
+                  browser.close()
+
+              import io
+              screen = Image.open(io.BytesIO(raw)).convert('RGBA')
+              assert screen.size == (1600, 900), screen.size
+              sw, sh = screen.size
+              margin = 12
+              toolbar = 68
+              x, y = margin, margin
+              width = sw
+              height = sh + toolbar
+              frame = Image.new('RGBA', (width+margin*2,height+margin*2), (0,0,0,0))
+              mask = Image.new('L', (width,height), 0)
+              ImageDraw.Draw(mask).rounded_rectangle((0,0,width-1,height-1), radius=20, fill=255)
+              window = Image.new('RGBA', (width,height), (248,248,247,255))
+              window.alpha_composite(screen, (0,toolbar))
+              draw = ImageDraw.Draw(window)
+              draw.rectangle((0,0,width,toolbar-1), fill=(242,242,240,255))
+              draw.line((0,toolbar,width,toolbar),fill=(207,208,206,255),width=1)
+              for i,color in enumerate(((255,95,86),(255,189,46),(39,201,63))):
+                  px=24+i*24
+                  draw.ellipse((px,26,px+12,38),fill=(*color,255))
+              # Browser navigation controls and address field, all vector-coded.
+              for px, direction in ((145,-1),(186,1)):
+                  pts=[(px-direction*7,25),(px,32),(px-direction*7,39)]
+                  draw.line(pts, fill=(115,116,115,255), width=2, joint='curve')
+              addr_w=430; addr_l=(width-addr_w)//2
+              draw.rounded_rectangle((addr_l,14,addr_l+addr_w,54),radius=12,fill=(229,229,227,255))
+              try:
+                  font=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',17)
+              except OSError: font=ImageFont.load_default()
+              draw.text((width//2,34),'popolam.online',anchor='mm',font=font,fill=(55,55,55,255))
+              draw.arc((width-60,22,width-34,46),25,300,fill=(105,105,105,255),width=2)
+              draw.line((width-35,21,width-33,29),fill=(105,105,105,255),width=2)
+              draw.line((width-35,21,width-41,25),fill=(105,105,105,255),width=2)
+              window.putalpha(mask)
+              frame.alpha_composite(window,(x,y))
+              ImageDraw.Draw(frame).rounded_rectangle((x,y,x+width-1,y+height-1),radius=20,outline=(190,191,189,255),width=2)
+              frame.save(output,format='WEBP',quality=94,method=6)
+              check=Image.open(output).convert('RGBA')
+              assert check.getpixel((0,0))[3] == 0
+              print('Wrote',output, 'size',check.size,'bytes',output.stat().st_size,'alpha outside',check.getpixel((0,0))[3])
+          finally:
+              server.terminate()
+              try: server.wait(timeout=5)
+              except subprocess.TimeoutExpired: server.kill()
+          PY
+      - name: Commit coded browser mockup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add images/pets/popolam-safari-browser.webp
+          git commit -m "Render true Popolam source homepage in clean Safari mockup"
+          git push
