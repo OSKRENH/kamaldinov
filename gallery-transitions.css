@@ -1,0 +1,52 @@
+/* Subtle editorial "curtain" transitions: a new cover is uncovered while
+   the old artwork recedes, with the neutral gallery surface staying still. */
+.image-field .slide {
+  transition: none;
+}
+.image-field .slide.is-current { z-index: 2; opacity: 1; }
+.image-field .slide.is-outgoing { z-index: 1; opacity: 1; }
+
+/* Keep the arrows in their original position; the counter floats one line up. */
+.carousel-controls { overflow: visible; }
+.carousel-controls .slide-counter {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + .55em);
+  display: flex;
+  align-items: baseline;
+  white-space: nowrap;
+  font-size: .95em;
+  font-weight: 400;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  letter-spacing: -.015em;
+}
+.counter-window {
+  display: inline-grid;
+  position: relative;
+  width: 2.15ch;
+  height: 1.2em;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+.counter-number {
+  grid-area: 1 / 1;
+  display: block;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+.counter-divider { opacity: .52; padding-inline: .10em; }
+.counter-total { opacity: .52; }
+
+/* The timing line is part of the normal gallery only, not the intro reel. */
+.portfolio[data-opening] .gallery-progress,
+.portfolio[data-view="detail"] .gallery-progress,
+.portfolio[data-book] .gallery-progress {
+  opacity: 0 !important;
+}
+.portfolio[data-view="detail"] .slide-counter { display: none; }
+
+@media (max-aspect-ratio: 1/1) {
+  .carousel-controls .slide-counter { bottom: calc(100% + .65em); }
+}
