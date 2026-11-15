@@ -49,14 +49,8 @@ export function createOpening({ page, field, motion, selectSlide, onLanding, onF
       image.draggable = false;
       image.decoding = 'async';
       image.loading = 'eager';
-      if (slide.element.dataset.feature === 'popolam') {
-        image.dataset.feature = 'popolam';
-        image.src = matchMedia('(max-aspect-ratio: 1/1)').matches
-          ? slide.project.cover.replace(/\.webp$/, '-mobile.webp')
-          : slide.project.cover;
-      } else {
-        image.src = slide.project.cover;
-      }
+      image.src = slide.project.cover;
+      if (slide.element.dataset.feature === 'popolam') image.dataset.feature = 'popolam';
       if (slide.element.dataset.feature === 'ai') image.dataset.feature = 'ai';
       return { image, slide };
     });
