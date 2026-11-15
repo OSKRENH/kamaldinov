@@ -1,10 +1,11 @@
 import { categories, normalize } from './admin/model.js';
 import { bookFor, brandbookGallery } from './brandbooks.js?v=1';
 import { updateCoverContrast } from './cover-contrast.js?v=1';
-import { createOpening } from './opening.js?v=2';
+import { createOpening } from './opening.js?v=3';
 
 const page = document.querySelector('#portfolio');
 const field = document.querySelector('.image-field');
+const progressFill = field.querySelector('.gallery-progress-fill');
 const caption = document.querySelector('#caption-link');
 const controls = document.querySelector('.carousel-controls');
 const carouselArrows = controls.querySelectorAll('button');
@@ -27,6 +28,7 @@ const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const books = brandbookGallery(motion);
 const opening = createOpening({
   page, field, motion, selectSlide: showSlide,
+  onProgress: animateProgress,
   onFinish: () => { refreshCoverContrast(); schedule(); },
 });
 const sourceLink = document.querySelector('#project-source');
@@ -40,6 +42,7 @@ let formatCategory = null;
 let projectListKey = null;
 let route;
 let timer;
+let progressAnimation = null;
 let paused = motion.matches;
 let carouselFocused = false;
 let projectHovered = false;
@@ -326,10 +329,33 @@ function step(direction, announce = true) {
   schedule();
 }
 
+// Use the exact same duration for the 1px line and the slide timer.
+function animateProgress(duration) {
+  if (!progressFill || motion.matches || document.hidden) return;
+  progressAnimation?.cancel();
+  field.dataset.progress = 'running';
+  progressAnimation = progressFill.animate([
+    { transform: 'scaleX(0)' },
+    { transform: 'scaleX(1)' },
+  ], { duration, easing: 'linear', fill: 'forwards' });
+}
+
+function stopProgress() {
+  progressAnimation?.cancel();
+  progressAnimation = null;
+  field.removeAttribute('data-progress');
+}
+
 function schedule() {
   clearTimeout(timer);
-  if (!page.hasAttribute('data-opening') && !paused && !carouselFocused && !projectHovered && !(route?.view === 'projects' && projectNav.contains(document.activeElement) && document.activeElement.matches(':focus-visible')) && !document.hidden && !cvDialog.open && route?.view !== 'detail' && slides.length > 1) {
-    timer = setTimeout(() => step(1, false), 5000);
+  // The intro has its own 200ms slide clock and must not be interrupted.
+  if (page.hasAttribute('data-opening')) return;
+
+  stopProgress();
+  if (!paused && !carouselFocused && !projectHovered && !(route?.view === 'projects' && projectNav.contains(document.activeElement) && document.activeElement.matches(':focus-visible')) && !document.hidden && !cvDialog.open && route?.view !== 'detail' && slides.length > 1) {
+    const slideDuration = 5000;
+    animateProgress(slideDuration);
+    timer = setTimeout(() => step(1, false), slideDuration);
   }
 }
 
