@@ -62,7 +62,9 @@ export function createOpening({ page, field, motion, selectSlide, onLanding, onF
         // A failed image load should not leave the homepage locked forever.
       }
       if (image.naturalWidth) {
-        image.dataset.orientation = image.naturalWidth > image.naturalHeight ? 'wide' : 'portrait';
+        const ratio = image.naturalHeight / image.naturalWidth;
+        image.dataset.orientation = ratio >= 1.8 ? 'infographic'
+          : ratio < 1 ? 'wide' : 'portrait';
       }
     }));
     if (finished || generation !== token) return;
