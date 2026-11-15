@@ -39,7 +39,6 @@ function luminance(raster, bounds, x, y, brightness = 1) {
 
 function setInk(node, light) {
   node.style.setProperty('--cover-ink', light ? '#fff' : '#0d0d0d');
-  node.style.setProperty('--cover-text-shadow', light ? 'rgb(0 0 0 / .68)' : 'rgb(255 255 255 / .7)');
 }
 
 export function updateCoverContrast(slide, targets) {
