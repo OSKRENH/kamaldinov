@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Портфолио Ивана Камальдинова, коммуникационного дизайнера.">
+  <title>Иван Камальдинов — портфолио</title>
+  <style>
+    @font-face {
+      font-family: "LT Superior";
+      src: url("fonts/LTSuperior-Regular.otf") format("opentype");
+      font-weight: 400;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "LT Superior";
+      src: url("fonts/LTSuperior-Medium.otf") format("opentype");
+      font-weight: 500;
+      font-display: swap;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    body, h1, h2, p, figure { margin: 0; }
+    html, body { overflow: hidden; }
+    body { background: #fff; color: #000; font-family: "LT Superior", Arial, sans-serif; }
+    button, a { color: inherit; }
+    button {
+      border: 0;
+      padding: 0;
+      background: none;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    button:focus-visible, a:focus-visible { outline: 1px solid; outline-offset: 3px; }
+    button:hover, button[aria-expanded="true"], button[aria-pressed="true"] {
+      text-decoration: underline;
+      text-decoration-thickness: .055em;
+      text-underline-offset: .13em;
+    }
+    [hidden] { display: none !important; }
+
+    .portfolio {
+      --margin-x: calc(100 / 3840 * 100vw);
+      --margin-y: calc(100 / 2160 * 100dvh);
+      --gap-x: calc(30 / 3840 * 100vw);
+      --gap-y: calc(30 / 2160 * 100dvh);
+      --headline: calc(180 / 3840 * 100vw);
+      --body-size: min(1.5625vw, 3.3dvh);
+      display: grid;
+      grid-template-columns: repeat(15, minmax(0, 1fr));
+      grid-template-rows: repeat(9, minmax(0, 1fr));
+      gap: var(--gap-y) var(--gap-x);
+      position: relative;
+      isolation: isolate;
+      width: 100%;
+      height: 100dvh;
+      padding: var(--margin-y) var(--margin-x);
+      overflow: hidden;
+      font-size: var(--body-size);
+      line-height: 1.2;
+    }
+
+    .name { display: contents; font-size: var(--headline); font-weight: 500; }
+    .name span, .cv-button {
+      grid-row: 1;
+      align-self: start;
+      line-height: 1;
+      transform: translateY(-.075em);
+    }
+    .given-name { grid-column: 1 / span 6; }
+    .family-name { grid-column: 7 / span 6; }
+    .cv-button {
+      grid-column: 13 / -1;
+      justify-self: start;
+      font-size: var(--headline);
+      font-weight: 500;
+      text-decoration: underline;
+      text-decoration-thickness: .045em;
+      text-underline-offset: .19em;
+    }
+    .intro { grid-column: 1 / span 6; grid-row: 4 / span 2; }
+    .categories, .secondary { grid-row: 7 / -1; align-self: start; }
+    .categories { grid-column: 1 / span 3; }
+    .secondary { grid-column: 4 / span 3; }
+    .menu { display: flex; flex-direction: column; align-items: flex-start; }
+    .menu button, .menu a { white-space: nowrap; }
+
+    .image-field {
+      position: absolute;
+      z-index: -1;
+      inset: auto var(--margin-x) var(--margin-y) auto;
+      width: min(calc(2560 / 3840 * 100vw), calc(2560 / 2160 * 100dvh));
+      aspect-ratio: 16 / 9;
+      background: #f2f2f2;
+    }
+    .image-field img { width: 100%; height: 100%; display: block; object-fit: cover; }
+
+    dialog {
+      max-width: min(32rem, calc(100vw - 2rem));
+      max-height: calc(100dvh - 2rem);
+      border: 0;
+      padding: clamp(1rem, 5vw, 2rem);
+      color: inherit;
+      font-size: clamp(.9rem, 2.4vw, 1.25rem);
+    }
+    dialog::backdrop { background: rgb(0 0 0 / .2); }
+    dialog h2 { font-weight: 500; margin-bottom: .65em; }
+    dialog button { margin-top: 1.2em; text-decoration: underline; }
+
+    @media (max-aspect-ratio: 1/1) {
+      .portfolio {
+        --headline: clamp(20px, 6.45vw, 58px);
+        --body-size: clamp(12px, min(4vw, 3.8dvh), 24px);
+        --margin-x: max(14px, 5vw);
+        --margin-y: max(12px, 4dvh);
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        grid-template-rows: auto minmax(3rem, 1fr) auto auto;
+        row-gap: min(3.6dvh, 1.75rem);
+      }
+      .name { display: block; grid-column: 1 / span 5; grid-row: 1; line-height: .96; }
+      .name span { display: block; transform: none; }
+      .cv-button { grid-column: 6; justify-self: end; transform: none; }
+      .image-field {
+        position: static;
+        grid-column: 1 / -1;
+        grid-row: 2;
+        align-self: center;
+        justify-self: end;
+        width: min(100%, 52dvh);
+        max-height: 100%;
+      }
+      .intro { grid-column: 1 / -1; grid-row: 3; }
+      .categories, .secondary { grid-row: 4; }
+      .categories { grid-column: 1 / span 3; }
+      .secondary { grid-column: 4 / -1; }
+      .menu button, .menu a { line-height: 1.35; }
+    }
+  </style>
+</head>
+<body>
+  <main class="portfolio">
+    <h1 class="name"><span class="given-name">Иван</span> <span class="family-name">Камальдинов</span></h1>
+    <button class="cv-button" type="button" aria-haspopup="dialog" aria-controls="cv">CV</button>
+
+    <p class="intro">Коммуникационный дизайнер с опытом больше 15 лет. Делаю айдентику, наружную и цифровую рекламу, буклеты, книги и презентации. Работаю с задачей от идеи и визуальной системы до адаптаций для печати и экрана.</p>
+
+    <nav class="categories menu" aria-label="Разделы портфолио">
+      <button type="button" data-category="advertising" aria-controls="secondary" aria-expanded="false">Реклама</button>
+      <button type="button" data-category="identity" aria-controls="secondary" aria-expanded="false">Айдентика</button>
+      <button type="button" data-category="editions" aria-controls="secondary" aria-expanded="false">Издания</button>
+      <button type="button" data-category="presentations" aria-pressed="false">Презентации</button>
+      <button type="button" data-category="pets" aria-controls="secondary" aria-expanded="false">Pets</button>
+    </nav>
+    <nav class="secondary menu" id="secondary" aria-label="Подразделы" hidden></nav>
+
+    <figure class="image-field" aria-hidden="true">
+      <img id="preview" alt="" hidden>
+    </figure>
+  </main>
+
+  <dialog id="cv" aria-labelledby="cv-title">
+    <h2 id="cv-title">Иван Камальдинов</h2>
+    <p>Коммуникационный дизайнер. Более 15 лет в дизайне.</p>
+    <p>Айдентика, наружная и цифровая реклама, издания, презентации.</p>
+    <form method="dialog"><button type="submit" autofocus>Закрыть</button></form>
+  </dialog>
+
+  <script>
+    const sections = {
+      advertising: [
+        { label: 'Оффлайн' },
+        { label: 'Digital' },
+      ],
+      identity: [
+        { label: 'Брендбуки' },
+        { label: 'Мерч' },
+      ],
+      editions: [
+        { label: 'Печатные' },
+        { label: 'Цифровые' },
+      ],
+      presentations: [],
+      pets: [
+        { label: 'Пополам', href: 'https://popolam.online/' },
+      ],
+    };
+
+    const categories = [...document.querySelectorAll('[data-category]')];
+    const secondary = document.querySelector('#secondary');
+    const preview = document.querySelector('#preview');
+    const cv = document.querySelector('#cv');
+    let activeCategory = null;
+
+    function showPreview(image) {
+      preview.hidden = !image;
+      if (image) preview.src = image;
+      else preview.removeAttribute('src');
+    }
+
+    function openCategory(button) {
+      const key = button.dataset.category;
+      activeCategory = activeCategory === key ? null : key;
+
+      for (const category of categories) {
+        const state = category.hasAttribute('aria-expanded') ? 'aria-expanded' : 'aria-pressed';
+        category.setAttribute(state, category.dataset.category === activeCategory);
+      }
+
+      const items = sections[activeCategory] ?? [];
+      secondary.replaceChildren(...items.map((item) => {
+        const control = document.createElement(item.href ? 'a' : 'button');
+        control.textContent = item.label;
+
+        if (item.href) {
+          control.href = item.href;
+          return control;
+        }
+
+        control.type = 'button';
+        control.setAttribute('aria-pressed', 'false');
+        control.addEventListener('click', () => {
+          const wasSelected = control.getAttribute('aria-pressed') === 'true';
+          for (const other of secondary.querySelectorAll('button')) {
+            other.setAttribute('aria-pressed', other === control && !wasSelected);
+          }
+          showPreview(wasSelected ? null : item.image);
+        });
+        return control;
+      }));
+      secondary.hidden = items.length === 0;
+      showPreview(null);
+    }
+
+    for (const category of categories) {
+      category.addEventListener('click', () => openCategory(category));
+      category.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowRight' && category.getAttribute('aria-expanded') === 'true') {
+          secondary.firstElementChild?.focus();
+        }
+      });
+    }
+
+    secondary.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' && event.key !== 'ArrowLeft') return;
+      const category = categories.find((button) => button.dataset.category === activeCategory);
+      if (!category) return;
+      event.preventDefault();
+      if (event.key === 'Escape') openCategory(category);
+      category.focus();
+    });
+
+    document.querySelector('.cv-button').addEventListener('click', () => cv.showModal());
+  </script>
+</body>
+</html>
