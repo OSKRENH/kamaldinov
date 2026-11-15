@@ -141,8 +141,8 @@
       "client": "Пополам",
       "category": "pets",
       "subcategory": "",
-      "description": "Сервис совместного выбора. Главная страница, адаптированная для десктопа и телефона.",
-      "cover": "https://oskrenh.github.io/kamaldinov/images/pets/popolam-safari-iphone.webp",
+      "description": "Сервис совместного выбора. Главная страница, отрендеренная из исходного кода в 16:9 и оформленная как окно Safari.",
+      "cover": "https://oskrenh.github.io/kamaldinov/images/pets/popolam-safari-browser.webp",
       "url": "https://popolam.online/"
     }
   ]
