@@ -85,6 +85,10 @@
     .secondary { grid-column: 4 / span 3; }
     .menu { display: flex; flex-direction: column; align-items: flex-start; }
     .menu button, .menu a { white-space: nowrap; }
+    .project-picker { max-width: 100%; margin-top: .35em; font: inherit; color: inherit; background: #fff; }
+    .project-link { max-width: 100%; overflow: hidden; text-overflow: ellipsis; margin-top: .25em; }
+    .intro { white-space: pre-line; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; }
+    @media (max-aspect-ratio: 1/1) { .intro { -webkit-line-clamp: 5; } }
 
     .image-field {
       position: absolute;
@@ -143,13 +147,13 @@
     <h1 class="name"><span class="given-name">Иван</span> <span class="family-name">Камальдинов</span></h1>
     <button class="cv-button" type="button" aria-haspopup="dialog" aria-controls="cv">CV</button>
 
-    <p class="intro">Коммуникационный дизайнер с опытом больше 15 лет. Делаю айдентику, наружную и цифровую рекламу, буклеты, книги и презентации. Работаю с задачей от идеи и визуальной системы до адаптаций для печати и экрана.</p>
+    <p class="intro" id="intro">Коммуникационный дизайнер с опытом больше 15 лет. Делаю айдентику, наружную и цифровую рекламу, буклеты, книги и презентации. Работаю с задачей от идеи и визуальной системы до адаптаций для печати и экрана.</p>
 
     <nav class="categories menu" aria-label="Разделы портфолио">
       <button type="button" data-category="advertising" aria-controls="secondary" aria-expanded="false">Реклама</button>
       <button type="button" data-category="identity" aria-controls="secondary" aria-expanded="false">Айдентика</button>
       <button type="button" data-category="editions" aria-controls="secondary" aria-expanded="false">Издания</button>
-      <button type="button" data-category="presentations" aria-pressed="false">Презентации</button>
+      <button type="button" data-category="presentations" aria-controls="secondary" aria-expanded="false">Презентации</button>
       <button type="button" data-category="pets" aria-controls="secondary" aria-expanded="false">Pets</button>
     </nav>
     <nav class="secondary menu" id="secondary" aria-label="Подразделы" hidden></nav>
@@ -181,16 +185,64 @@
         { label: 'Цифровые' },
       ],
       presentations: [],
-      pets: [
-        { label: 'Пополам', href: 'https://popolam.online/' },
-      ],
+      pets: [],
     };
 
     const categories = [...document.querySelectorAll('[data-category]')];
     const secondary = document.querySelector('#secondary');
     const preview = document.querySelector('#preview');
     const cv = document.querySelector('#cv');
+    const intro = document.querySelector('#intro');
+    let projects = [{ title: 'Пополам', category: 'pets', url: 'https://popolam.online/' }];
     let activeCategory = null;
+    let selectedFilter = '';
+    let projectPicker;
+    let projectLink;
+
+    function publicUrl(value) {
+      try {
+        const url = new URL(value);
+        return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password
+          ? url.href : '';
+      } catch { return ''; }
+    }
+
+    function showProject(project) {
+      const cover = publicUrl(project?.cover);
+      preview.alt = cover && project.title ? project.title : '';
+      preview.parentElement.setAttribute('aria-hidden', String(!cover));
+      showPreview(cover);
+      const url = publicUrl(project?.url);
+      projectLink.hidden = !url;
+      if (url) {
+        projectLink.href = url;
+        projectLink.textContent = project.title;
+      } else projectLink.removeAttribute('href');
+      projectPicker.title = typeof project?.description === 'string' ? project.description : '';
+    }
+
+    function renderProjects() {
+      const matches = projects.filter((project) =>
+        project?.category === activeCategory
+        && typeof project.title === 'string'
+        && (!selectedFilter || project.subcategory === selectedFilter)
+      );
+      projectPicker.replaceChildren(...matches.map((project, i) => new Option(project.title, String(i))));
+      projectPicker.hidden = matches.length === 0 || (matches.length === 1 && !!publicUrl(matches[0].url));
+      projectPicker.onchange = () => showProject(matches[Number(projectPicker.value)]);
+      showProject(matches[0]);
+      secondary.hidden = !activeCategory || (!sections[activeCategory].length && !matches.length);
+    }
+
+    fetch('./content.json', { cache: 'no-cache' }).then((response) => {
+      if (!response.ok) return null;
+      return response.json();
+    }).then((data) => {
+      if (!data) return;
+      if (typeof data.intro === 'string' && data.intro.trim()) intro.textContent = data.intro;
+      if (Array.isArray(data.projects)) projects = data.projects;
+      if (activeCategory) renderProjects();
+    }).catch(() => {});
 
     function showPreview(image) {
       preview.hidden = !image;
@@ -207,36 +259,36 @@
         category.setAttribute(state, category.dataset.category === activeCategory);
       }
 
+      selectedFilter = '';
       const items = sections[activeCategory] ?? [];
-      secondary.replaceChildren(...items.map((item) => {
-        const control = document.createElement(item.href ? 'a' : 'button');
+      const filters = items.map((item) => {
+        const control = document.createElement('button');
         control.textContent = item.label;
-
-        if (item.href) {
-          control.href = item.href;
-          return control;
-        }
-
         control.type = 'button';
         control.setAttribute('aria-pressed', 'false');
         control.addEventListener('click', () => {
-          const wasSelected = control.getAttribute('aria-pressed') === 'true';
-          for (const other of secondary.querySelectorAll('button')) {
-            other.setAttribute('aria-pressed', other === control && !wasSelected);
+          selectedFilter = selectedFilter === item.label ? '' : item.label;
+          for (const button of filters) {
+            button.setAttribute('aria-pressed', button === control && !!selectedFilter);
           }
-          showPreview(wasSelected ? null : item.image);
+          renderProjects();
         });
         return control;
-      }));
-      secondary.hidden = items.length === 0;
-      showPreview(null);
+      });
+      projectPicker = document.createElement('select');
+      projectPicker.className = 'project-picker';
+      projectPicker.setAttribute('aria-label', 'Проекты');
+      projectLink = document.createElement('a');
+      projectLink.className = 'project-link';
+      secondary.replaceChildren(...filters, projectPicker, projectLink);
+      renderProjects();
     }
 
     for (const category of categories) {
       category.addEventListener('click', () => openCategory(category));
       category.addEventListener('keydown', (event) => {
         if (event.key === 'ArrowRight' && category.getAttribute('aria-expanded') === 'true') {
-          secondary.firstElementChild?.focus();
+          secondary.querySelector('button, select:not([hidden]), a[href]:not([hidden])')?.focus();
         }
       });
     }

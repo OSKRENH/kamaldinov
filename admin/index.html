@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Редактор портфолио</title>
+<style>
+:root { color-scheme: light; font: 16px/1.45 system-ui,sans-serif; color: #161616; background: #f6f6f4; }
+* { box-sizing: border-box; }
+body { max-width: 900px; margin: auto; padding: clamp(20px,5vw,56px); }
+header, .project-top, .actions { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+h1,h2,p { margin:0; } h1 { font-size: clamp(26px,5vw,42px); letter-spacing:-.04em; }
+h2 { font-size: 21px; }
+section { padding:24px; background:#fff; border:1px solid #ddd; margin:20px 0; }
+label { display:block; font-size:14px; margin: 10px 0; }
+input,select,textarea { width:100%; padding:10px; margin-top:5px; border:1px solid #bcbcbc; border-radius:4px; background:#fff; color:inherit; font:inherit; }
+textarea { min-height:100px; resize:vertical; }
+button,a.button { font:inherit; color:inherit; cursor:pointer; border:1px solid #bbb; padding:8px 12px; background:#fff; border-radius:4px; text-decoration:none; }
+button.primary { color:#fff; background:#161616; border-color:#161616; }
+button:disabled { opacity:.5; cursor:wait; }
+article { border-top:1px solid #ddd; margin-top:16px; padding-top:14px; }
+summary { cursor:pointer; font-weight:600; padding:5px 0; }
+.pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.muted { color:#575757; font-size:14px; margin-top:8px; }
+#status { margin-top:12px; min-height:1.5em; }
+#export-text { min-height:180px; } [hidden] { display:none !important; }
+@media(max-width:480px) { .pair { grid-template-columns:1fr; gap:0; } section { padding:16px; } }
+</style>
+</head>
+<body>
+<header><h1>Редактор портфолио</h1><a href="https://oskrenh.github.io/kamaldinov/">Открыть сайт</a></header>
+<form id="editor" hidden>
+<section aria-labelledby="bio-title">
+<h2 id="bio-title">Главная страница</h2>
+<label>Описание<textarea id="intro" maxlength="650" required></textarea></label>
+</section>
+<section aria-labelledby="projects-title">
+<div class="project-top"><h2 id="projects-title">Проекты</h2><button id="add" type="button">Добавить проект</button></div>
+<div id="projects"></div>
+</section>
+<div class="actions">
+<button class="primary" id="publish" type="submit">Сохранить для GitHub</button>
+<button id="reload" type="button">Загрузить опубликованную версию</button>
+</div>
+</form>
+<p id="status" role="status">Загружаю портфолио…</p>
+<section id="export" hidden>
+<h2>Сохранение через GitHub</h2>
+<p class="muted">Скопируй подготовленный текст, замени им содержимое файла в GitHub и нажми Commit changes.</p>
+<label>Данные для файла content.json<textarea id="export-text" readonly></textarea></label>
+<div class="actions">
+<button type="button" id="copy">Скопировать</button>
+<a class="button" href="https://github.com/OSKRENH/kamaldinov/edit/main/content.json" target="_blank" rel="noopener">Открыть редактор GitHub</a>
+</div>
+</section>
+<template id="project">
+<article>
+<details>
+<summary></summary>
+<label>Название<input name="title" required maxlength="100"></label>
+<div class="pair"><label>Раздел<select name="category"></select></label><label>Подраздел<select name="subcategory"></select></label></div>
+<label>Краткое описание<textarea name="description" maxlength="600"></textarea></label>
+<label>Обложка, URL изображения<input name="cover" type="url" maxlength="1000" placeholder="https://…"></label>
+<label>Ссылка на проект<input name="url" type="url" maxlength="1000" placeholder="https://…"></label>
+<button type="button" data-remove>Удалить проект</button>
+</details>
+</article>
+</template>
+<script type="module" src="./editor.js"></script>
+</body>
+</html>
