@@ -1,0 +1,188 @@
+/* Etalon / SHAGAL — physical billboard structures created in CSS. */
+.billboard-gallery {
+  position: absolute;
+  z-index: 2;
+  inset: 19% 2.604167% 7% 23%;
+  pointer-events: none;
+  overflow: visible;
+}
+.billboard-scene {
+  position: absolute;
+  inset: 0 0 10% 0;
+  perspective: 1450px;
+  perspective-origin: 50% 42%;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+.billboard-structure {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  display: block;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+  transform-style: preserve-3d;
+  transform-origin: 50% 60%;
+  will-change: transform, opacity, filter;
+  transition:
+    transform 1200ms cubic-bezier(.18, .84, .22, 1),
+    opacity 1000ms ease,
+    filter 1100ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.billboard-structure--15x5 { width: min(86%, 1320px); aspect-ratio: 3 / 1; }
+.billboard-structure--6x3 { width: min(57%, 880px); aspect-ratio: 2 / 1; }
+
+.billboard-face {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #293849;
+  border: clamp(4px, .58vw, 11px) solid #22282e;
+  outline: 1px solid #495158;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / .26),
+    8px 12px 0 rgb(40 46 51 / .15),
+    20px 28px 52px rgb(0 0 0 / .18);
+  backface-visibility: hidden;
+}
+.billboard-face::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .10);
+}
+.billboard-face img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.billboard-leg {
+  position: absolute;
+  z-index: 0;
+  top: 98%;
+  width: 2.3%;
+  height: 35%;
+  background: linear-gradient(90deg, #41484c, #8e989b 42%, #51575b 85%, #31373b);
+  box-shadow: 7px 10px 14px rgb(0 0 0 / .14);
+  transform: translateZ(-12px);
+  pointer-events: none;
+}
+.billboard-leg--left { left: 23%; }
+.billboard-leg--right { right: 23%; }
+.billboard-structure::after {
+  position: absolute;
+  z-index: -1;
+  left: 8%;
+  right: 8%;
+  top: 114%;
+  height: 23%;
+  content: '';
+  background: radial-gradient(ellipse, rgb(0 0 0 / .16), transparent 68%);
+  transform: translateZ(-18px);
+  pointer-events: none;
+}
+
+.billboard-scene[data-active-format="15x5"] .billboard-structure--15x5 {
+  z-index: 2;
+  opacity: 1;
+  filter: none;
+  transform: translate3d(-48%, -54%, 135px) rotateY(-4deg) rotateX(1deg);
+}
+.billboard-scene[data-active-format="15x5"] .billboard-structure--6x3 {
+  z-index: 1;
+  opacity: .42;
+  filter: saturate(.75) brightness(.94) blur(.5px);
+  transform: translate3d(6%, -5%, -470px) rotateY(-12deg) scale(.92);
+}
+.billboard-scene[data-active-format="6x3"] .billboard-structure--15x5 {
+  z-index: 1;
+  opacity: .43;
+  filter: saturate(.74) brightness(.94) blur(.65px);
+  transform: translate3d(-75%, -28%, -540px) rotateY(10deg) scale(.88);
+}
+.billboard-scene[data-active-format="6x3"] .billboard-structure--6x3 {
+  z-index: 2;
+  opacity: 1;
+  filter: none;
+  transform: translate3d(-22%, -56%, 170px) rotateY(-5deg) rotateX(1deg) scale(1.03);
+}
+
+.billboard-size-picker {
+  position: absolute;
+  z-index: 4;
+  right: 2%;
+  bottom: 3%;
+  display: flex;
+  gap: clamp(20px, 2.8vw, 55px);
+  pointer-events: auto;
+  font-size: clamp(13px, .95vw, 19px);
+  letter-spacing: -.015em;
+}
+.billboard-size-picker button {
+  display: inline-block;
+  border: 0;
+  padding: 4px 0 6px;
+  color: #666;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 250ms ease, border-color 250ms ease;
+}
+.billboard-size-picker button[aria-pressed="true"] {
+  color: #111;
+  border-bottom-color: currentColor;
+}
+.billboard-size-picker button:hover { color: #111; }
+[data-billboard] .image-field { visibility: hidden; }
+[data-billboard] .carousel-controls { visibility: hidden; }
+[data-billboard] .project-title,
+[data-billboard] .detail-back,
+[data-billboard] .project-info { position: absolute; z-index: 5; }
+[data-billboard] .project-info { width: min(16%, 270px); }
+
+@media (max-aspect-ratio: 1/1) {
+  .billboard-gallery { inset: 27% 0 12% 0; }
+  .billboard-scene { inset: 0 0 17%; perspective: 750px; }
+  .billboard-structure { top: 42%; }
+  .billboard-structure--15x5 { width: 94%; }
+  .billboard-structure--6x3 { width: 71%; }
+  .billboard-face { border-width: 4px; }
+  .billboard-size-picker {
+    bottom: 4%;
+    right: 5.128205%;
+    left: 5.128205%;
+    justify-content: space-between;
+    font-size: clamp(15px, 4vw, 19px);
+  }
+  .billboard-scene[data-active-format="15x5"] .billboard-structure--15x5 {
+    transform: translate3d(-51%, -52%, 70px) rotateY(-4deg);
+  }
+  .billboard-scene[data-active-format="15x5"] .billboard-structure--6x3 {
+    transform: translate3d(4%, 17%, -240px) rotateY(-11deg) scale(.91);
+  }
+  .billboard-scene[data-active-format="6x3"] .billboard-structure--15x5 {
+    transform: translate3d(-73%, -17%, -260px) rotateY(9deg) scale(.91);
+  }
+  .billboard-scene[data-active-format="6x3"] .billboard-structure--6x3 {
+    transform: translate3d(-31%, -51%, 90px) rotateY(-4deg) scale(1.04);
+  }
+  [data-billboard] .project-title { right: 25%; }
+  [data-billboard] .project-info {
+    top: auto;
+    bottom: max(18%, calc(env(safe-area-inset-bottom) + 6em));
+    width: 80%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .billboard-structure, .billboard-size-picker button { transition: none !important; }
+}
