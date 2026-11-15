@@ -324,11 +324,6 @@ dialog button { margin-top: 1.2em; text-decoration: underline; }
     object-fit: cover;
     object-position: left bottom;
   }
-  .portfolio:not([data-view="detail"]) .caption,
-  .portfolio:not([data-view="detail"]) .carousel-controls {
-    color: var(--cover-ink, #0d0d0d);
-  }
-
   .image-field::after {
     background: linear-gradient(0deg, rgb(255 255 255 / .95), transparent 44%, transparent 69%, rgb(255 255 255 / .8));
   }
