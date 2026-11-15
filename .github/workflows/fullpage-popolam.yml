@@ -96,4 +96,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add images/pets/popolam-safari-browser.webp
           git commit -m "Reshoot Popolam entire page with original 1600px browser width"
-          git push
+          git pull --rebase origin main
+          git push origin HEAD:main
