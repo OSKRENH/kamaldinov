@@ -1,6 +1,7 @@
 import { categories, normalize } from './admin/model.js';
 import { bookFor, brandbookGallery } from './brandbooks.js?v=1';
 import { updateCoverContrast } from './cover-contrast.js?v=1';
+import { isBillboardProject, billboardGallery } from './billboards.js?v=1';
 
 const page = document.querySelector('#portfolio');
 const field = document.querySelector('.image-field');
@@ -24,6 +25,7 @@ const cvDialog = document.querySelector('#cv');
 const detailBack = document.querySelector('.detail-back');
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const books = brandbookGallery(motion);
+const billboards = billboardGallery();
 const sourceLink = document.querySelector('#project-source');
 
 let projects = [];
@@ -146,6 +148,10 @@ function render(next, moveFocus = false) {
   page.toggleAttribute('data-book', Boolean(book));
   if (book) books.open(book, project.title);
   else books.close();
+  const billboard = detail && isBillboardProject(project);
+  page.toggleAttribute('data-billboard', Boolean(billboard));
+  if (billboard) billboards.open();
+  else billboards.close();
   route = next;
   projectHovered = false;
   page.dataset.view = view;
@@ -434,7 +440,10 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') back();
   if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
     const direction = event.key === 'ArrowLeft' ? -1 : 1;
-    if (page.hasAttribute('data-book')) {
+    if (page.hasAttribute('data-billboard')) {
+      event.preventDefault();
+      billboards.step(direction);
+    } else if (page.hasAttribute('data-book')) {
       event.preventDefault();
       books.step(direction);
     } else if (visibleSlides().length >= 2) {
