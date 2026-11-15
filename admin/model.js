@@ -35,6 +35,7 @@ export function normalize(data) {
       if (subcategory && !filters.includes(subcategory)) throw new Error('Проверь подраздел проекта.');
       return {
         title: cleanText(project.title, 'Название', 100, true),
+        client: cleanText(project.client ?? '', 'Бренд / клиент', 100),
         category: project.category,
         subcategory,
         description: cleanText(project.description ?? '', 'Краткое описание', 600),
