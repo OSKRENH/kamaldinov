@@ -19,28 +19,11 @@ const cv = document.querySelector('.cv-button');
 const cvDialog = document.querySelector('#cv');
 const detailBack = document.querySelector('.detail-back');
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
-const aurix = [
-  ['cup', 'Фирменный стакан и шоколад AURIX'],
-  ['booklets', 'Два варианта обложки блокнота AURIX'],
-  ['cardholder', 'Кардхолдер AURIX в фирменной упаковке'],
-  ['bag', 'Фирменный пакет AURIX'],
-  ['glasses', 'Бокалы в подарочной упаковке AURIX'],
-  ['pen', 'Фирменная ручка AURIX'],
-  ['umbrella', 'Фирменный зонт AURIX'],
-];
-const defaultCover = 'https://oskrenh.github.io/kamaldinov/images/aurix/cup.webp';
-const bundledProject = {
-  category: 'identity',
-  subcategory: 'Мерч',
-  title: 'Мерч для офиса продаж',
-  description: 'Фирменные материалы и подарки для AURIX: блокноты, упаковка, ручка, зонт, стаканы и шоколад. Знак, паттерн и палитра бренда связывают предметы разных форматов в одну серию.',
-  cover: defaultCover,
-  url: '',
-};
+const sourceLink = document.querySelector('#project-source');
 
 let projects = [];
 let slides = [];
-let currentImage = field.querySelector('img');
+let currentElement = null;
 let currentSlide = null;
 let slideRequest = 0;
 let formatCategory = null;
@@ -176,11 +159,13 @@ function render(next, moveFocus = false) {
   if (detail) {
     projectTitle.textContent = project.title;
     document.querySelector('#project-description').textContent = project.description;
+    sourceLink.hidden = !project.url;
+    if (project.url) sourceLink.href = project.url;
+    else sourceLink.removeAttribute('href');
   }
 
   const set = visibleSlides();
-  const preloaded = !currentSlide && !detail && set.find((slide) => slide.element === currentImage);
-  const selected = set.includes(currentSlide) ? currentSlide : preloaded || set[0];
+  const selected = set.includes(currentSlide) ? currentSlide : set[0];
   showSlide(selected);
   for (const arrow of carouselArrows) arrow.disabled = set.length < 2;
   schedule();
@@ -236,9 +221,6 @@ function showSlide(slide, announce = false) {
   caption.hidden = false;
   document.querySelector('#slide-category').textContent = categories[project.category].label;
   document.querySelector('#slide-title').textContent = project.title;
-  const brand = document.querySelector('#slide-brand');
-  brand.textContent = slide.brand;
-  brand.hidden = !slide.brand;
   caption.href = project.href;
   caption.dataset.route = project.href;
   if (announce) status.textContent = slide.alt;
@@ -250,16 +232,16 @@ function showSlide(slide, announce = false) {
       previous.classList.remove('is-current', 'is-outgoing');
       previous.setAttribute('aria-hidden', 'true');
     }
-    const outgoing = currentImage !== element && currentImage?.isConnected ? currentImage : null;
+    const outgoing = currentElement !== element && currentElement?.isConnected ? currentElement : null;
     outgoing?.classList.add('is-outgoing');
     const fresh = !element.isConnected;
     if (fresh) {
       field.append(element);
       element.getBoundingClientRect();
     }
-    if (element instanceof HTMLImageElement) element.removeAttribute('aria-hidden');
+    if (slide.preview) element.removeAttribute('aria-hidden');
     element.classList.add('is-current');
-    currentImage = element;
+    currentElement = element;
     if (outgoing) {
       const clearOutgoing = () => {
         if (request === slideRequest) outgoing.classList.remove('is-outgoing');
@@ -271,10 +253,13 @@ function showSlide(slide, announce = false) {
       }
     }
   };
-  if (!(element instanceof HTMLImageElement) || (element.complete && element.naturalWidth)) commit();
-  else element.decode().then(commit).catch(() => {
+  const preview = slide.preview;
+  if (preview && !preview.hasAttribute('src')) preview.src = project.cover;
+  if (!preview || (preview.complete && preview.naturalWidth)) commit();
+  else preview.decode().then(commit).catch(() => {
     if (request !== slideRequest) return;
     slide.element = colorSlide(project);
+    slide.preview = null;
     currentSlide = null;
     showSlide(slide);
   });
@@ -332,22 +317,17 @@ function install(data) {
     const id = count === 1 ? base : base + '~' + count;
     return { ...project, id, href: path(project.category, project.subcategory, id) };
   });
-  slides = projects.flatMap((project) => {
-    const series = project.cover === defaultCover;
-    const brand = series ? 'AURIX' : '';
-    const assets = series ? aurix.map(([file, alt]) => ['./images/aurix/' + file + '.webp', alt])
-      : project.cover ? [[project.cover, project.title]] : [];
-    if (!assets.length) return [{ element: colorSlide(project), project, alt: project.title, brand }];
-    return assets.map(([src, alt], index) => {
-      const element = index === 0 && series && currentImage ? currentImage : new Image();
-      element.className = element.isConnected ? 'slide is-current' : 'slide';
-      element.classList.toggle('project-cover', !series);
-      element.dataset.category = project.category;
-      element.alt = alt;
-      element.decoding = 'async';
-      if (!element.isConnected) element.src = src;
-      return { element, project, alt, brand };
-    });
+  slides = projects.map((project) => {
+    const alt = project.title;
+    if (!project.cover) return { element: colorSlide(project), project, alt };
+    const element = document.createElement('div');
+    element.className = 'slide project-cover';
+    element.style.setProperty('--preview', 'url(' + JSON.stringify(project.cover) + ')');
+    const preview = new Image();
+    preview.alt = alt;
+    preview.decoding = 'async';
+    element.append(preview);
+    return { element, preview, project, alt };
   });
   for (const [key, section] of Object.entries(categories)) {
     const anchor = link(section.label, path(key));
@@ -433,7 +413,7 @@ async function start() {
     install(normalize(await response.json()));
   } catch (error) {
     console.error(error);
-    install({ intro: document.querySelector('#intro').textContent, projects: [bundledProject] });
+    install({ intro: document.querySelector('#intro').textContent, projects: [] });
   }
 }
 start();

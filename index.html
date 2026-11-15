@@ -7,13 +7,12 @@
   <meta name="theme-color" content="#ffffff">
   <title>Иван Камальдинов — портфолио</title>
   <link rel="preload" href="./fonts/LTSuperior-Regular.otf" as="font" type="font/otf" crossorigin>
-  <link rel="stylesheet" href="./portfolio.css?v=portfolio-examples-5">
-  <script type="module" src="./portfolio.js?v=portfolio-examples-5"></script>
+  <link rel="stylesheet" href="./portfolio.css?v=drive-portfolio-6">
+  <script type="module" src="./portfolio.js?v=drive-portfolio-6"></script>
 </head>
 <body>
   <main class="portfolio" id="portfolio" data-view="home" data-starting>
     <figure class="image-field" aria-label="Изображения проектов">
-      <img class="slide is-current" src="./images/aurix/cup.webp" alt="Фирменный стакан и шоколад AURIX" fetchpriority="high">
     </figure>
     <header>
       <h1 class="name"><span class="given-name"><span>Иван</span></span> <span class="family-name"><span>Камальдинов</span></span></h1>
@@ -27,10 +26,9 @@
 Визуальный стиль, иерархия и системы, которые работают на любых носителях — от книжного разворота до рекламного щита.</p>
 
     <div class="caption" id="caption">
-      <a class="caption-link" id="caption-link">
-        <span id="slide-category">Айдентика</span>
-        <span id="slide-title">Мерч для офиса продаж</span>
-        <span id="slide-brand">AURIX</span>
+      <a class="caption-link" id="caption-link" hidden>
+        <span id="slide-category"></span>
+        <span id="slide-title"></span>
       </a>
     </div>
     <div class="carousel-controls" aria-label="Карусель">
@@ -44,6 +42,7 @@
     <nav class="projects menu" id="projects" aria-label="Проекты" inert></nav>
     <div class="project-info" id="project-info" inert>
       <p id="project-description"></p>
+      <a id="project-source" target="_blank" rel="noopener noreferrer" hidden>Открыть оригинал ↗</a>
     </div>
   </main>
 
