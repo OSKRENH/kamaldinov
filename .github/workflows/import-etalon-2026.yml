@@ -1,0 +1,29 @@
+name: Import Etalon campaign artwork
+on:
+  push:
+    paths:
+      - .github/workflows/import-etalon-2026.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import-artwork:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download original uploaded SHAGAL banners
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p images/advertising
+          curl -fL --retry 3 --connect-timeout 20 "https://at.adobe.com/uImztIoy6q6tQfCh" -o images/advertising/etalon-2026-15x5.jpg
+          curl -fL --retry 3 --connect-timeout 20 "https://at.adobe.com/LD8zMM055cbfcs2c" -o images/advertising/etalon-2026-6x3.jpg
+          file images/advertising/*.jpg
+          test "$(wc -c < images/advertising/etalon-2026-15x5.jpg)" -gt 30000
+          test "$(wc -c < images/advertising/etalon-2026-6x3.jpg)" -gt 30000
+      - name: Commit original images
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add images/advertising/etalon-2026-15x5.jpg images/advertising/etalon-2026-6x3.jpg
+          git diff --cached --quiet || (git commit -m "Add Etalon 2026 original billboard creatives" && git push)
