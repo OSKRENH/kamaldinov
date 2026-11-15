@@ -29,7 +29,7 @@ const books = brandbookGallery(motion);
 const opening = createOpening({
   page, field, motion, selectSlide: showSlide,
   onLanding: (finalSlide) => {
-    // Make the intro's last frame slide 01, not 15, for the gallery's counter.
+    // Make the intro's last frame slide 01 for the gallery's counter.
     const pivot = slides.indexOf(finalSlide);
     if (pivot > 0) slides = [...slides.slice(pivot), ...slides.slice(0, pivot)];
     updateSlideCounter(finalSlide, 1, true);
@@ -232,8 +232,7 @@ function renderIntro(copy) {
 }
 
 function visibleSlides() {
-  // The homepage presents the three SU infographics as ONE collage.
-  // Their original, individually navigable detail pages are preserved.
+  // The homepage omits SU Membership and Ecosystem; individual pages stay reachable.
   return route?.view === 'detail'
     ? originalSlides.filter((slide) => slide.project === route.project)
     : slides;
@@ -320,7 +319,8 @@ function showSlide(slide, announce = false, direction = 1) {
   const { project } = slide;
   caption.hidden = false;
   document.querySelector('#slide-category').textContent = categories[project.category].label;
-  document.querySelector('#slide-title').textContent = project.title;
+  document.querySelector('#slide-title').textContent = project.client || project.title;
+  caption.setAttribute('aria-label', project.title);
   caption.href = project.href;
   caption.dataset.route = project.href;
   if (announce) status.textContent = slide.alt;
@@ -485,6 +485,9 @@ function install(data) {
     if (!project.cover) return { element: colorSlide(project), project, alt };
     const element = document.createElement('div');
     element.className = 'slide project-cover';
+    if (project.title === 'Artificial Intelligence, Big Data, Machine Learning, and Deep Learning') {
+      element.dataset.feature = 'ai';
+    }
     element.style.setProperty('--preview', 'url(' + JSON.stringify(project.cover) + ')');
     const preview = new Image();
     preview.alt = alt;
@@ -492,40 +495,11 @@ function install(data) {
     element.append(preview);
     return { element, preview, project, alt };
   });
-  // One editorial frame made from three originals, arranged as a cascading
-  // three-layer spread: AI at the back, Membership in the middle, Ecosystem on top.
-  const collageTitles = [
-    'Artificial Intelligence, Big Data, Machine Learning, and Deep Learning',
-    'SU Membership',
-    'SU Ecosystem',
-  ];
-  const originals = collageTitles.map((title) =>
-    originalSlides.find((item) => item.project.title === title));
-  if (originals.every(Boolean)) {
-    const collageCovers = originals.map((item) => item.project.cover);
-    const element = document.createElement('div');
-    element.className = 'slide project-cover infographic-stack';
-    element.setAttribute('aria-hidden', 'true');
-    element.style.setProperty('--preview', 'url(' + JSON.stringify(collageCovers[0]) + ')');
-    for (const [index, src] of collageCovers.entries()) {
-      const image = new Image();
-      image.className = 'infographic-sheet infographic-sheet--' + ['ai', 'membership', 'ecosystem'][index];
-      image.alt = collageTitles[index];
-      image.decoding = 'async';
-      image.src = src;
-      element.append(image);
-    }
-    const collage = {
-      element,
-      preview: element.querySelector('.infographic-sheet--ai'),
-      project: { ...originals[0].project, title: 'Singularity University — инфографики' },
-      alt: 'Три инфографики Singularity University: AI, Membership, Ecosystem',
-      collageCovers,
-    };
-    slides = shuffleSlides([...originalSlides.filter((slide) => !originals.includes(slide)), collage]);
-  } else {
-    slides = shuffleSlides([...originalSlides]);
-  }
+  // The landing reel and main gallery have one AI infographic cover.
+  // Membership and Ecosystem still have their own project detail pages.
+  slides = shuffleSlides(originalSlides.filter(({ project }) =>
+    project.title !== 'SU Membership' && project.title !== 'SU Ecosystem'
+  ));
   for (const [key, section] of Object.entries(categories)) {
     const anchor = link(section.label, path(key));
     if (section.filters.length) {
