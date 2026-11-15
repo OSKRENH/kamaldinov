@@ -1,0 +1,85 @@
+/* Full-bleed three-second cover reel followed by staggered editorial reveal. */
+.portfolio[data-opening="reel"] .image-field {
+  inset: 0;
+  transition: none;
+}
+.portfolio[data-opening="settle"] .image-field {
+  transition: inset 1100ms var(--ease);
+}
+.opening-reel {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  background: #f2f2f2;
+  pointer-events: none;
+}
+.opening-reel-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0;
+  transform: scale(1.025);
+  transition: opacity 105ms ease-out, transform 380ms ease;
+}
+.opening-reel-image.is-active {
+  opacity: 1;
+  transform: scale(1);
+}
+.portfolio[data-opening="settle"] .opening-reel {
+  opacity: 0;
+  transition: opacity 430ms ease 680ms;
+}
+.portfolio[data-opening] .given-name span,
+.portfolio[data-opening] .family-name span,
+.portfolio[data-opening] .cv-button span {
+  opacity: 0;
+  transform: translate3d(var(--shift), 0, 0);
+  animation: none;
+  transition:
+    opacity 720ms ease,
+    transform 1000ms var(--ease);
+}
+.portfolio[data-opening] .intro,
+.portfolio[data-opening] .categories,
+.portfolio[data-opening] .caption,
+.portfolio[data-opening] .carousel-controls {
+  opacity: 0;
+  transform: translate3d(clamp(32px, 4.5vw, 110px), 0, 0);
+  pointer-events: none;
+  transition:
+    opacity 750ms ease,
+    transform 1000ms var(--ease);
+}
+.portfolio[data-opening].opening-show-given .given-name span,
+.portfolio[data-opening].opening-show-family .family-name span,
+.portfolio[data-opening].opening-show-cv .cv-button span,
+.portfolio[data-opening].opening-show-description .intro,
+.portfolio[data-opening].opening-show-navigation .categories,
+.portfolio[data-opening].opening-show-extras .caption,
+.portfolio[data-opening].opening-show-extras .carousel-controls {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  pointer-events: auto;
+}
+@media (max-aspect-ratio: 1/1) {
+  .portfolio[data-opening="reel"] .image-field { inset: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .portfolio[data-opening] .image-field,
+  .portfolio[data-opening] .opening-reel,
+  .portfolio[data-opening] .opening-reel-image,
+  .portfolio[data-opening] .given-name span,
+  .portfolio[data-opening] .family-name span,
+  .portfolio[data-opening] .cv-button span,
+  .portfolio[data-opening] .intro,
+  .portfolio[data-opening] .categories,
+  .portfolio[data-opening] .caption,
+  .portfolio[data-opening] .carousel-controls {
+    animation: none !important;
+    transition: none !important;
+  }
+}
