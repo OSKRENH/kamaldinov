@@ -141,42 +141,40 @@
   }
 }
 
-/* Popolam: authentic Safari and iPhone screenshots in two editorial
-   compositions. The mobile artwork is portrait, not a cropped desktop frame. */
-.project-cover[data-feature="popolam"] .popolam-picture {
-  display: block;
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
+/* Popolam: a real 16:9 desktop screenshot rendered from the app's code,
+   set inside a vector-built Safari browser. The artwork itself is transparent,
+   so it needs no background panel and no second iPhone mockup. */
+.project-cover[data-feature="popolam"]::before {
+  display: none;
 }
-.project-cover[data-feature="popolam"] .popolam-picture img {
+.portfolio:not([data-view="detail"]) .project-cover[data-feature="popolam"] > img {
   display: block;
   position: relative;
   inset: auto;
   width: 100%;
   height: 100%;
   object-fit: contain;
-  object-position: center center;
+  object-position: center;
+  max-width: none;
 }
 @media (max-aspect-ratio: 1/1) {
+  /* Same positioning as FLAT: a large wide cover cropped by the right and
+     bottom edges of the grey gallery instead of scaled into a small card. */
   .portfolio:not([data-view="detail"]) .project-cover[data-feature="popolam"] {
     padding: 0;
   }
-  .portfolio:not([data-view="detail"]) .project-cover[data-feature="popolam"] .popolam-picture img {
-    position: relative;
-    inset: auto;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: center center;
-  }
+  .portfolio:not([data-view="detail"]) .project-cover[data-feature="popolam"] > img,
   .opening-reel-image[data-feature="popolam"] {
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    inset: auto;
+    left: 15%;
+    bottom: 0;
+    width: auto;
+    height: 86%;
+    max-width: none;
+    max-height: none;
     padding: 0;
     object-fit: contain;
-    object-position: center;
+    object-position: left bottom;
   }
 }
