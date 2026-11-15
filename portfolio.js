@@ -40,6 +40,7 @@ const sourceLink = document.querySelector('#project-source');
 
 let projects = [];
 let slides = [];
+let originalSlides = [];
 let currentElement = null;
 let currentSlide = null;
 let slideRequest = 0;
@@ -231,7 +232,11 @@ function renderIntro(copy) {
 }
 
 function visibleSlides() {
-  return route?.view === 'detail' ? slides.filter((slide) => slide.project === route.project) : slides;
+  // The homepage presents the three SU infographics as ONE collage.
+  // Their original, individually navigable detail pages are preserved.
+  return route?.view === 'detail'
+    ? originalSlides.filter((slide) => slide.project === route.project)
+    : slides;
 }
 
 // Shuffle without repeats: autoplay and arrow navigation follow a new random
@@ -475,7 +480,7 @@ function install(data) {
     const id = count === 1 ? base : base + '~' + count;
     return { ...project, id, href: path(project.category, project.subcategory, id) };
   });
-  slides = shuffleSlides(projects.map((project) => {
+  originalSlides = projects.map((project) => {
     const alt = project.title;
     if (!project.cover) return { element: colorSlide(project), project, alt };
     const element = document.createElement('div');
@@ -486,7 +491,41 @@ function install(data) {
     preview.decoding = 'async';
     element.append(preview);
     return { element, preview, project, alt };
-  }));
+  });
+  // One editorial frame made from three originals, arranged as a cascading
+  // three-layer spread: AI at the back, Membership in the middle, Ecosystem on top.
+  const collageTitles = [
+    'Artificial Intelligence, Big Data, Machine Learning, and Deep Learning',
+    'SU Membership',
+    'SU Ecosystem',
+  ];
+  const originals = collageTitles.map((title) =>
+    originalSlides.find((item) => item.project.title === title));
+  if (originals.every(Boolean)) {
+    const collageCovers = originals.map((item) => item.project.cover);
+    const element = document.createElement('div');
+    element.className = 'slide project-cover infographic-stack';
+    element.setAttribute('aria-hidden', 'true');
+    element.style.setProperty('--preview', 'url(' + JSON.stringify(collageCovers[0]) + ')');
+    for (const [index, src] of collageCovers.entries()) {
+      const image = new Image();
+      image.className = 'infographic-sheet infographic-sheet--' + ['ai', 'membership', 'ecosystem'][index];
+      image.alt = collageTitles[index];
+      image.decoding = 'async';
+      image.src = src;
+      element.append(image);
+    }
+    const collage = {
+      element,
+      preview: element.querySelector('.infographic-sheet--ai'),
+      project: { ...originals[0].project, title: 'Singularity University — инфографики' },
+      alt: 'Три инфографики Singularity University: AI, Membership, Ecosystem',
+      collageCovers,
+    };
+    slides = shuffleSlides([...originalSlides.filter((slide) => !originals.includes(slide)), collage]);
+  } else {
+    slides = shuffleSlides([...originalSlides]);
+  }
   for (const [key, section] of Object.entries(categories)) {
     const anchor = link(section.label, path(key));
     if (section.filters.length) {
@@ -529,8 +568,8 @@ function previewProject(anchor) {
   if (route?.view !== 'projects' || !anchor) return;
   const project = projects.find((entry) => entry.href === anchor.dataset.route);
   if (!project) return;
-  const slide = slides.find((entry) => entry.project === project);
-  showSlide(slide);
+  const slide = originalSlides.find((entry) => entry.project === project);
+  if (slide) showSlide(slide);
   schedule();
 }
 
