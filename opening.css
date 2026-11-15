@@ -1,3 +1,29 @@
+/* One-pixel timing line on the upper edge of the grey gallery field.
+   The same element tracks both quick intro cuts and 5-second autoplay. */
+.gallery-progress {
+  position: absolute;
+  z-index: 8;
+  inset: 0 0 auto;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.image-field[data-progress="running"] .gallery-progress { opacity: 1; }
+.gallery-progress-fill {
+  display: block;
+  position: absolute;
+  inset: 0;
+  background: #151515;
+  transform-origin: left center;
+  transform: scaleX(0);
+  will-change: transform;
+}
+.portfolio[data-view="detail"] .gallery-progress,
+.portfolio[data-book] .gallery-progress {
+  opacity: 0 !important;
+}
+
 /* Home opening: the grey canvas and contained covers shrink for exactly 3s. */
 .portfolio[data-opening="reel"] .image-field {
   inset: 0;
