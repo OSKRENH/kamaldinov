@@ -1,137 +1,106 @@
-// First-visit choreography for the portfolio homepage.
-// UI starts immediately; the cover reel plays for 3 seconds once images are ready.
-const REEL_MS = 3000;
-const SETTLE_MS = 1140;
+// The entire homepage UI enters together as the grey cover wall contracts.
+// The cover reel and field movement share one three-second timeline.
+const INTRO_MS = 3000;
+const CROSSFADE_MS = 300;
 
 export function createOpening({ page, field, motion, selectSlide, onFinish }) {
   const reel = field.querySelector('.opening-reel');
   let generation = 0;
   let frame = 0;
-  let resolveFrame = null;
   let finished = false;
-  const revealTimers = [];
-
-  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-  const stillCurrent = (id) => id === generation && !finished;
+  let completionTimer = 0;
 
   function finish() {
     if (finished) return;
     finished = true;
-    generation++;
+    ++generation;
     cancelAnimationFrame(frame);
-    for (const timer of revealTimers) clearTimeout(timer);
-    resolveFrame?.();
-    resolveFrame = null;
+    clearTimeout(completionTimer);
     reel?.remove();
     page.removeAttribute('data-opening');
-    page.removeAttribute('aria-busy');
-    page.classList.remove(
-      'opening-show-given',
-      'opening-show-family',
-      'opening-show-cv',
-      'opening-show-description',
-      'opening-show-navigation',
-      'opening-show-extras'
-    );
+    page.classList.remove('opening-ui-visible', 'opening-gallery-visible');
     onFinish();
   }
 
-  // Start the editorial UI choreography while the background is still full-screen.
-  // Only the image-gallery caption and arrows wait for the background to settle.
-  function startInterface(id) {
-    const reveals = [
-      ['opening-show-given', 90],
-      ['opening-show-family', 330],
-      ['opening-show-cv', 600],
-      ['opening-show-description', 870],
-      ['opening-show-navigation', 1130],
-    ];
-    for (const [className, at] of reveals) {
-      revealTimers.push(setTimeout(() => {
-        if (stillCurrent(id)) page.classList.add(className);
-      }, at));
-    }
-  }
-
-  async function play(slides) {
+  function play(slides) {
     if (finished || motion.matches || !reel || !slides.length) {
       finish();
       return;
     }
-    const id = ++generation;
-    startInterface(id);
 
-    // Decode images before the timed reel to avoid flashing blank frames.
-    const prepared = await Promise.all(slides.filter((item) => item.project.cover).map(async (slide) => {
-      const image = new Image();
-      image.alt = '';
-      image.decoding = 'async';
-      image.src = slide.project.cover;
-      try {
-        await image.decode();
-        return { image, slide };
-      } catch {
-        return null;
-      }
-    }));
+    const token = ++generation;
+    const covers = slides.filter((slide) => slide.project.cover);
+    if (!covers.length) {
+      finish();
+      return;
+    }
 
-    if (!stillCurrent(id)) return;
-    const posters = prepared.filter(Boolean);
-    if (!posters.length) { finish(); return; }
+    // Keep the cover already painted by HTML, preventing a blank first frame.
+    const initial = reel.querySelector('.opening-reel-image');
+    const posters = covers.map((slide, index) => {
+      const img = index === 0 && initial ? initial : new Image();
+      img.className = 'opening-reel-image' + (index === 0 ? ' is-active' : '');
+      img.alt = '';
+      img.draggable = false;
+      img.decoding = 'async';
+      img.loading = 'eager';
+      if (index !== 0) img.src = slide.project.cover;
+      const setOrientation = () => {
+        img.dataset.orientation = img.naturalWidth > img.naturalHeight ? 'wide' : 'portrait';
+      };
+      if (img.complete && img.naturalWidth) setOrientation();
+      else img.addEventListener('load', setOrientation, { once: true });
+      return { image: img, slide };
+    });
+    reel.replaceChildren(...posters.map(({ image }) => image));
 
-    reel.replaceChildren(...posters.map(({ image }) => {
-      image.classList.add('opening-reel-image');
-      image.dataset.orientation = image.naturalWidth > image.naturalHeight ? 'wide' : 'portrait';
-      image.setAttribute('aria-hidden', 'true');
-      image.draggable = false;
-      return image;
-    }));
+    let last = 0;
+    let lastValid = posters[0];
+    let stageStarted = false;
 
-    let last = -1;
     function show(index) {
       if (index === last) return;
-      if (last >= 0) posters[last].image.classList.remove('is-active');
-      posters[index].image.classList.add('is-active');
+      const target = posters[index];
+      // A slow image response must never blank the reel.
+      if (!target.image.complete || !target.image.naturalWidth) return;
+      posters[last].image.classList.remove('is-active');
+      target.image.classList.add('is-active');
       last = index;
+      lastValid = target;
     }
-    show(0);
 
-    // Switch every single cover in one 3000ms reel; the last frame is kept
-    // during the seamless move to the normal gallery rectangle.
-    await new Promise((resolve) => {
-      resolveFrame = resolve;
-      let start = null;
+    // Two animation frames ensure browsers register the full-screen starting
+    // geometry before interpolating inset to the *normal* gallery geometry.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (finished || generation !== token) return;
+      page.classList.add('opening-ui-visible');
+      page.dataset.opening = 'shrinking';
+      stageStarted = true;
+      const started = performance.now();
       const tick = (now) => {
-        if (!stillCurrent(id)) { resolve(); return; }
-        if (start === null) start = now;
-        const elapsed = Math.min(REEL_MS, now - start);
-        const index = Math.min(posters.length - 1, Math.floor(elapsed / REEL_MS * posters.length));
+        if (finished || generation !== token) return;
+        const elapsed = Math.min(INTRO_MS, now - started);
+        const index = Math.min(posters.length - 1, Math.floor(elapsed / INTRO_MS * posters.length));
         show(index);
-        if (elapsed >= REEL_MS) {
-          resolveFrame = null;
-          resolve();
-        } else {
+        if (elapsed < INTRO_MS) {
           frame = requestAnimationFrame(tick);
+          return;
         }
+
+        // The gallery has reached its final size; reveal its controls only now.
+        selectSlide(lastValid.slide);
+        page.dataset.opening = 'settled';
+        page.classList.add('opening-gallery-visible');
+        completionTimer = setTimeout(() => {
+          if (!finished && generation === token) finish();
+        }, CROSSFADE_MS + 30);
       };
       frame = requestAnimationFrame(tick);
-    });
-    if (!stillCurrent(id)) return;
+    }));
 
-    // Place the matching real carousel slide behind the reel before shrinking.
-    selectSlide(posters.at(-1).slide);
-    field.getBoundingClientRect(); // flush the fullscreen inset
-    page.dataset.opening = 'settle';
-    await sleep(SETTLE_MS);
-    if (!stillCurrent(id)) return;
-
-    // The regular cover is now occupying its final gallery rectangle.
-    // Reveal only the carousel's own controls after the shrink is complete.
-    reel.remove();
-    page.dataset.opening = 'sequence';
-    page.classList.add('opening-show-extras');
-    await sleep(850);
-    if (stillCurrent(id)) finish();
+    return () => {
+      if (!stageStarted) finish();
+    };
   }
 
   return { play, cancel: finish };
