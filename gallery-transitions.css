@@ -92,17 +92,27 @@
   }
 }
 
-/* Infographics are actual 834x1750 long-form pieces (not book covers).
-   On desktop give them one third of the grey field's width and let the
-   image bleed below the visible bottom edge. */
+/* The AI infographic is the sole feature image for Singularity University.
+   Match its *visual width* to FLAT (1900 × 1344), which uses contain-fitting
+   inside the ordinary gallery padding, then let the tall sheet bleed below
+   the bottom of the grey field. The reel shares the same responsive sizing. */
 @media (min-aspect-ratio: 1/1) {
-  .portfolio:not([data-view="detail"]) .project-cover[data-orientation="infographic"]:not(.infographic-stack) img,
-  .portfolio:not([data-view="detail"]) .opening-reel-image[data-orientation="infographic"] {
+  .image-field { container-type: size; }
+  .portfolio:not([data-view="detail"]) .project-cover[data-feature="ai"] > img,
+  .portfolio:not([data-view="detail"]) .opening-reel-image[data-feature="ai"] {
+    --media-inset: clamp(16px, 2.604167vw, 100px);
     position: absolute;
-    top: var(--media-inset, clamp(16px, 2.604167vw, 100px));
-    left: 33.3333%;
-    width: 33.3333%;
+    inset: auto;
+    top: var(--media-inset);
+    left: 50%;
+    translate: -50% 0;
+    width: 72%; /* Fallback in browsers without container-size units. */
+    width: min(
+      calc(100cqw - 2 * var(--media-inset)),
+      calc(141.369cqh - 2.82738 * var(--media-inset))
+    );
     height: auto;
+    min-width: 0;
     max-width: none;
     max-height: none;
     padding: 0;
@@ -111,85 +121,21 @@
   }
 }
 
-/* One gallery frame, three real infographic covers.
-   AI (front) → Membership (middle) → Ecosystem (back),
-   with restrained overlap and generous left-to-right spacing.
-   The first cover starts exactly at the usual artwork top inset. */
-.infographic-stack {
-  --media-inset: clamp(16px, 2.604167vw, 100px);
-}
-.portfolio .project-cover.infographic-stack > .infographic-sheet,
-.portfolio .opening-reel-image.infographic-stack > .infographic-sheet {
-  position: absolute;
-  inset: auto;
-  top: var(--sheet-y);
-  left: var(--sheet-x);
-  z-index: var(--sheet-layer);
-  display: block;
-  width: 32%;
-  height: auto;
-  max-width: none;
-  max-height: none;
-  min-width: 0;
-  min-height: 0;
-  padding: 0;
-  object-fit: contain;
-  object-position: center top;
-  opacity: 1;
-  transform: none;
-}
-.infographic-stack > .infographic-sheet--ai {
-  --sheet-x: 5%;
-  --sheet-y: var(--media-inset);
-  --sheet-layer: 3;
-}
-.infographic-stack > .infographic-sheet--membership {
-  --sheet-x: 34%;
-  --sheet-y: calc(var(--media-inset) + clamp(12px, 2.2vw, 70px));
-  --sheet-layer: 2;
-}
-.infographic-stack > .infographic-sheet--ecosystem {
-  --sheet-x: 63%;
-  --sheet-y: calc(var(--media-inset) + clamp(24px, 4.4vw, 140px));
-  --sheet-layer: 1;
-}
-/* The reel uses the exact composition as the final gallery slide,
-   preserving visual continuity when the grey window contracts. */
-.portfolio .opening-reel-image.infographic-stack {
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.portfolio .opening-reel-image.infographic-stack::before {
-  content: '';
-  position: absolute;
-  z-index: 0;
-  inset: -32px;
-  background: var(--preview) center / cover no-repeat;
-  filter: blur(32px) brightness(.88) saturate(.83);
-  transform: scale(1.04);
-}
 @media (max-aspect-ratio: 1/1) {
-  .infographic-stack { --media-inset: clamp(12px, 3.5vw, 22px); }
-  .portfolio .project-cover.infographic-stack > .infographic-sheet,
-  .portfolio .opening-reel-image.infographic-stack > .infographic-sheet {
-    width: 40%;
+  .portfolio:not([data-view="detail"]) .project-cover[data-feature="ai"] > img,
+  .portfolio:not([data-view="detail"]) .opening-reel-image[data-feature="ai"] {
+    position: absolute;
+    inset: auto;
+    top: clamp(12px, 3.5vw, 22px);
+    left: 50%;
+    translate: -50% 0;
+    width: 86%;
     height: auto;
-  }
-  .infographic-stack > .infographic-sheet--ai {
-    --sheet-x: 5%;
-    --sheet-y: var(--media-inset);
-  }
-  .infographic-stack > .infographic-sheet--membership {
-    --sheet-x: 33%;
-    --sheet-y: calc(var(--media-inset) + 7%);
-  }
-  .infographic-stack > .infographic-sheet--ecosystem {
-    --sheet-x: 61%;
-    --sheet-y: calc(var(--media-inset) + 14%);
-  }
-  .portfolio .opening-reel-image.infographic-stack::before {
-    inset: -24px;
-    filter: blur(20px) brightness(.92) saturate(.75);
+    min-width: 0;
+    max-width: none;
+    max-height: none;
+    padding: 0;
+    object-fit: contain;
+    object-position: center top;
   }
 }
