@@ -38,6 +38,7 @@
 .billboard-structure--6x3 { width: min(57%, 880px); aspect-ratio: 2 / 1; }
 
 .billboard-face {
+  display: block;
   position: relative;
   z-index: 2;
   width: 100%;
