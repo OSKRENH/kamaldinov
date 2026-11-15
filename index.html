@@ -9,12 +9,15 @@
   <link rel="preload" href="./fonts/LTSuperior-Regular.otf" as="font" type="font/otf" crossorigin>
   <link rel="stylesheet" href="./portfolio.css?v=mobile-cover-8">
   <link rel="stylesheet" href="./brandbooks.css?v=1">
-  <link rel="stylesheet" href="./billboards.css?v=1">
-  <script type="module" src="./portfolio.js?v=etalon-billboards-1"></script>
+  <link rel="stylesheet" href="./opening.css?v=1">
+  <script type="module" src="./portfolio.js?v=opening-reel-1"></script>
 </head>
 <body>
-  <main class="portfolio" id="portfolio" data-view="home" data-starting>
+  <main class="portfolio" id="portfolio" data-view="home" data-opening="reel">
     <figure class="image-field" aria-label="Изображения проектов">
+      <div class="opening-reel" aria-hidden="true">
+        <img class="opening-reel-image is-active" src="./images/drive/spentys-playbook.webp" fetchpriority="high" alt="">
+      </div>
     </figure>
     <header>
       <h1 class="name"><span class="given-name"><span>Иван</span></span> <span class="family-name"><span>Камальдинов</span></span></h1>
@@ -57,33 +60,6 @@
         <button class="book-enlarge" type="button">Увеличить ↗</button>
       </div>
       <nav class="book-strip" aria-label="Все страницы брендбука"></nav>
-    </section>
-    <section id="billboards" class="billboard-gallery" aria-label="Наружная реклама SHAGAL. Два билборда" hidden inert>
-      <div class="billboard-scene" data-active-format="15x5">
-        <button type="button" class="billboard-structure billboard-structure--15x5"
-          data-billboard-select="15x5" aria-label="Показать билборд 15 на 5 метров" aria-pressed="true">
-          <span class="billboard-face">
-            <img src="./images/advertising/etalon-2026-15x5.jpg"
-              width="2048" height="691" alt="SHAGAL — старт продаж. Рекламный баннер Эталон, 15 на 5 метров" draggable="false">
-          </span>
-          <span class="billboard-leg billboard-leg--left" aria-hidden="true"></span>
-          <span class="billboard-leg billboard-leg--right" aria-hidden="true"></span>
-        </button>
-        <button type="button" class="billboard-structure billboard-structure--6x3"
-          data-billboard-select="6x3" aria-label="Показать билборд 6 на 3 метра" aria-pressed="false">
-          <span class="billboard-face">
-            <img src="./images/advertising/etalon-2026-6x3.jpg"
-              width="2048" height="1024" alt="SHAGAL — старт продаж. Рекламный баннер Эталон, 6 на 3 метра" draggable="false">
-          </span>
-          <span class="billboard-leg billboard-leg--left" aria-hidden="true"></span>
-          <span class="billboard-leg billboard-leg--right" aria-hidden="true"></span>
-        </button>
-      </div>
-      <nav class="billboard-size-picker" aria-label="Размер рекламного щита">
-        <button type="button" data-billboard-size="15x5" aria-pressed="true">15 × 5 м</button>
-        <button type="button" data-billboard-size="6x3" aria-pressed="false">6 × 3 м</button>
-      </nav>
-      <span class="visually-hidden billboard-announcement" aria-live="polite"></span>
     </section>
   </main>
 
