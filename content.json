@@ -96,6 +96,30 @@
       "description": "",
       "cover": "https://oskrenh.github.io/kamaldinov/images/drive/music-theory.webp",
       "url": "https://drive.google.com/file/d/1qHHU7WqpdFpI6CMGqPctaiGXM8RO0qOd/view?usp=drivesdk"
+    },
+    {
+      "title": "FLAT",
+      "category": "identity",
+      "subcategory": "Брендбуки",
+      "description": "",
+      "cover": "https://oskrenh.github.io/kamaldinov/images/brandbooks/flat/01.webp",
+      "url": ""
+    },
+    {
+      "title": "A5",
+      "category": "identity",
+      "subcategory": "Брендбуки",
+      "description": "",
+      "cover": "https://oskrenh.github.io/kamaldinov/images/brandbooks/a5/01.webp",
+      "url": ""
+    },
+    {
+      "title": "ITM Brand",
+      "category": "identity",
+      "subcategory": "Брендбуки",
+      "description": "",
+      "cover": "https://oskrenh.github.io/kamaldinov/images/brandbooks/itm/01.webp",
+      "url": ""
     }
   ]
 }

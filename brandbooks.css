@@ -1,0 +1,161 @@
+[data-book] .image-field,
+[data-book] .carousel-controls,
+[data-book] .project-info { visibility: hidden; }
+
+[data-book] { background: #f3f2ee; }
+[data-book] .project-title,
+[data-book] .top-action { font-size: clamp(26px, 3.2vw, 62px); }
+
+.brandbook {
+  --page-gap: clamp(12px, 2vw, 34px);
+  position: absolute;
+  inset: clamp(110px, 17dvh, 180px) var(--gutter) max(24px, env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  gap: 14px;
+  font-size: 13px;
+  animation: book-arrive 520ms var(--ease) both;
+}
+@keyframes book-arrive {
+  from { opacity: .3; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.book-stage {
+  display: grid;
+  grid-template-columns: minmax(0, .21fr) minmax(0, 1fr) minmax(0, .21fr);
+  grid-template-rows: minmax(0, 1fr);
+  align-items: center;
+  gap: var(--page-gap);
+  min-height: 0;
+  touch-action: pan-y pinch-zoom;
+}
+.book-page {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  cursor: zoom-in;
+}
+.book-page img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  min-height: 0;
+  min-width: 0;
+  object-fit: contain;
+  box-shadow: 0 10px 28px rgb(30 26 15 / .16);
+}
+.book-neighbor {
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: #504d43;
+  opacity: .62;
+  transition: opacity 220ms ease, transform 280ms var(--ease);
+}
+.book-neighbor:disabled { visibility: hidden; }
+.book-neighbor img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 116 / 82;
+  object-fit: contain;
+  box-shadow: 0 3px 12px rgb(30 26 15 / .14);
+}
+.book-neighbor span { font-size: 18px; }
+.book-neighbor:focus-visible { opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+  .book-neighbor:enabled:hover { opacity: 1; transform: translateY(-4px); }
+}
+
+.book-tools {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding-top: 4px;
+}
+.book-counter { grid-column: 2; font-variant-numeric: tabular-nums; color: #504d43; }
+.book-enlarge {
+  justify-self: end;
+  min-height: 28px;
+  text-decoration: underline;
+  text-decoration-color: #807b6d;
+  text-underline-offset: .22em;
+}
+.book-strip {
+  position: relative;
+  display: flex;
+  justify-content: safe center;
+  gap: 8px;
+  padding: 8px 4px;
+  overflow: auto hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #aaa598 transparent;
+}
+.book-thumb {
+  flex: 0 0 min(9vw, 88px);
+  aspect-ratio: 116 / 82;
+  background-image: var(--thumb-sheet);
+  background-position: var(--thumb-x) var(--thumb-y);
+  background-size: 600% calc(var(--thumb-rows) * 100%);
+  border: 1px solid #d2cfc4;
+  opacity: .65;
+  transition: opacity 200ms ease;
+}
+.book-thumb[aria-current] {
+  opacity: 1;
+  outline: 1px solid #29271f;
+  outline-offset: 3px;
+}
+.book-thumb:focus-visible { opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+  .book-thumb:hover { opacity: 1; }
+}
+
+.book-zoom {
+  position: fixed;
+  inset: 12px;
+  width: calc(100% - 24px);
+  height: calc(100% - 24px);
+  max-width: none;
+  max-height: none;
+  padding: 0 16px 16px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 0;
+  background: #f3f2ee;
+}
+.book-zoom form {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  width: max-content;
+  padding: 8px 16px 10px 0;
+  background: #f3f2ee;
+}
+.book-zoom form button { min-height: 36px; margin: 0; }
+.book-zoom img { display: block; min-width: 1100px; width: 100%; height: auto; }
+
+@media (max-aspect-ratio: 1/1) {
+  [data-book] .project-title,
+  [data-book] .top-action { font-size: clamp(22px, 7vw, 40px); }
+  .brandbook {
+    --page-gap: 6px;
+    inset-block-start: max(104px, 15dvh);
+    gap: 12px;
+  }
+  .book-stage { grid-template-columns: minmax(0, .13fr) minmax(0, 1fr) minmax(0, .13fr); }
+  .book-neighbor { gap: 6px; min-height: 44px; }
+  .book-thumb { flex-basis: 66px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brandbook { animation: none; }
+}

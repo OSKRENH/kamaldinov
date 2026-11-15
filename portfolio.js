@@ -1,4 +1,5 @@
 import { categories, normalize } from './admin/model.js';
+import { bookFor, brandbookGallery } from './brandbooks.js?v=1';
 
 const page = document.querySelector('#portfolio');
 const field = document.querySelector('.image-field');
@@ -19,6 +20,7 @@ const cv = document.querySelector('.cv-button');
 const cvDialog = document.querySelector('#cv');
 const detailBack = document.querySelector('.detail-back');
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
+const books = brandbookGallery(motion);
 const sourceLink = document.querySelector('#project-source');
 
 let projects = [];
@@ -137,6 +139,10 @@ function render(next, moveFocus = false) {
   const { view, project, category } = next;
   const detail = view === 'detail';
   const active = document.activeElement;
+  const book = detail ? bookFor(project) : null;
+  page.toggleAttribute('data-book', Boolean(book));
+  if (book) books.open(book, project.title);
+  else books.close();
   route = next;
   projectHovered = false;
   page.dataset.view = view;
@@ -145,7 +151,7 @@ function render(next, moveFocus = false) {
   categoryNav.inert = detail || (view === 'projects' && !directProjects);
   formatNav.inert = view !== 'formats' && !(view === 'projects' && !directProjects);
   projectNav.inert = view !== 'projects';
-  projectInfo.inert = !detail;
+  projectInfo.inert = !detail || Boolean(book);
   projectTitle.inert = !detail;
   detailBack.inert = !detail;
   name.inert = detail;
@@ -397,12 +403,17 @@ window.addEventListener('popstate', () => render(readRoute(), true));
 document.addEventListener('visibilitychange', schedule);
 motion.addEventListener('change', () => { paused = motion.matches; schedule(); });
 document.addEventListener('keydown', (event) => {
-  if (cvDialog.open || !route || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+  if (cvDialog.open || books.zoom.open || !route || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
   if (event.key === 'Escape') back();
   if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-    if (visibleSlides().length < 2) return;
-    event.preventDefault();
-    step(event.key === 'ArrowLeft' ? -1 : 1);
+    const direction = event.key === 'ArrowLeft' ? -1 : 1;
+    if (page.hasAttribute('data-book')) {
+      event.preventDefault();
+      books.step(direction);
+    } else if (visibleSlides().length >= 2) {
+      event.preventDefault();
+      step(direction);
+    }
   }
 });
 

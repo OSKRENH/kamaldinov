@@ -7,8 +7,9 @@
   <meta name="theme-color" content="#ffffff">
   <title>Иван Камальдинов — портфолио</title>
   <link rel="preload" href="./fonts/LTSuperior-Regular.otf" as="font" type="font/otf" crossorigin>
-  <link rel="stylesheet" href="./portfolio.css?v=drive-portfolio-6">
-  <script type="module" src="./portfolio.js?v=drive-portfolio-6"></script>
+  <link rel="stylesheet" href="./portfolio.css?v=brandbook-gallery-7">
+  <link rel="stylesheet" href="./brandbooks.css?v=1">
+  <script type="module" src="./portfolio.js?v=brandbook-gallery-7"></script>
 </head>
 <body>
   <main class="portfolio" id="portfolio" data-view="home" data-starting>
@@ -44,7 +45,23 @@
       <p id="project-description"></p>
       <a id="project-source" target="_blank" rel="noopener noreferrer" hidden>Открыть оригинал ↗</a>
     </div>
+    <section id="brandbook" class="brandbook" aria-label="Страницы брендбука" hidden>
+      <div class="book-stage">
+        <button type="button" class="book-neighbor" data-book-step="-1" aria-label="Предыдущая страница"><span aria-hidden="true">←</span></button>
+        <button type="button" class="book-page" aria-label="Увеличить страницу"></button>
+        <button type="button" class="book-neighbor" data-book-step="1" aria-label="Следующая страница"><span aria-hidden="true">→</span></button>
+      </div>
+      <div class="book-tools">
+        <output class="book-counter" aria-label="Страница" aria-live="polite"></output>
+        <button class="book-enlarge" type="button">Увеличить ↗</button>
+      </div>
+      <nav class="book-strip" aria-label="Все страницы брендбука"></nav>
+    </section>
   </main>
+
+  <dialog class="book-zoom" id="book-zoom" aria-label="Увеличенная страница">
+    <form method="dialog"><button type="submit" autofocus>Закрыть ×</button></form>
+  </dialog>
 
   <dialog id="cv" aria-labelledby="cv-title">
     <h2 id="cv-title">Иван Камальдинов</h2>
