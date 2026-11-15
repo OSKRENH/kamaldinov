@@ -494,17 +494,7 @@ function install(data) {
     const preview = new Image();
     preview.alt = alt;
     preview.decoding = 'async';
-    if (isPopolam) {
-      const picture = document.createElement('picture');
-      picture.className = 'popolam-picture';
-      const mobile = document.createElement('source');
-      mobile.media = '(max-aspect-ratio: 1/1)';
-      mobile.srcset = project.cover.replace(/\.webp$/, '-mobile.webp');
-      picture.append(mobile, preview);
-      element.append(picture);
-    } else {
-      element.append(preview);
-    }
+    element.append(preview);
     return { element, preview, project, alt };
   });
   // The landing reel and main gallery have one AI infographic cover.
