@@ -26,37 +26,29 @@ jobs:
           image = Image.open(source).convert('RGB')
           width, height = image.size
           px = image.load()
-          changed_rows = 0
-          leftmost = width
-          # The bright triangular artifact is confined to the right edge
-          # of the header, below the legitimate Singularity University logo.
-          # Keep the full logo and its spacing; repair only those edge rows.
-          for y in range(round(height * .142), round(height * .225)):
-              r,g,b = px[width-2,y]
-              if min(r,g,b) < 228 or max(r,g,b)-min(r,g,b) > 23:
-                  continue
-              x = width - 1
-              while x >= round(width * .69):
-                  r,g,b = px[x,y]
-                  if min(r,g,b) < 215 or max(r,g,b)-min(r,g,b) > 32:
-                      break
-                  x -= 1
-              if width - x < 10:
-                  continue
-              start = x + 1
-              # Sample the opaque background immediately to the left of
-              # the light strip; do not touch the rest of the artwork.
-              fill = px[max(0, x-3),y]
-              for xx in range(start,width):
-                  px[xx,y] = fill
-              changed_rows += 1
-              leftmost = min(leftmost,start)
-          # Trim a few white/fringing pixels along the outer right edge.
-          image = image.crop((0,0,width-4,height))
-          image.save(target, 'WEBP', quality=93, method=6)
-          print(f'Original dimensions: {width}x{height}')
-          print(f'Clean dimensions: {image.width}x{image.height}')
-          print(f'White edge rows repaired: {changed_rows}, earliest x: {leftmost}')
+          samples = [round(height*ratio) for ratio in (.158,.17,.18,.19,.20,.205,.215)]
+          for y in samples:
+              print(f'Row {y}: '+str([(x,px[x,y]) for x in (620,680,730,770,810,830)]))
+          changed = 0
+          changed_rows = set()
+          # Light triangular strip is embedded in the original artwork at
+          # upper-right, beneath the purple header; preserve the white logo
+          # positioned much higher in the image.
+          def near_white(color):
+              return min(color) >= 165 and max(color)-min(color) <= 95
+          for y in range(round(height*.135), round(height*.228)):
+              bg = px[round(width*.75),y]
+              if near_white(bg):
+                  bg = px[round(width*.69),y]
+              for x in range(round(width*.77),width):
+                  if near_white(px[x,y]):
+                      px[x,y] = bg
+                      changed += 1
+                      changed_rows.add(y)
+          image = image.crop((0,0,width-7,height))
+          image.save(target, 'WEBP', quality=94, method=6)
+          print(f'Original: {width}x{height}; clean: {image.width}x{image.height}')
+          print(f'Replaced bright edge pixels: {changed} in {len(changed_rows)} rows')
           print(f'New cover: {target}, {target.stat().st_size} bytes')
           PY
       - name: Commit clean cover
