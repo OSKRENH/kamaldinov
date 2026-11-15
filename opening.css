@@ -8,13 +8,15 @@
   opacity: 0;
   overflow: hidden;
   pointer-events: none;
+  /* Blend the whole 1px strip against the same backdrop as the text. */
+  mix-blend-mode: difference;
 }
 .image-field[data-progress="running"] .gallery-progress { opacity: 1; }
 .gallery-progress-fill {
   display: block;
   position: absolute;
   inset: 0;
-  background: #151515;
+  background: #fff;
   transform-origin: left center;
   transform: scaleX(0);
   will-change: transform;
