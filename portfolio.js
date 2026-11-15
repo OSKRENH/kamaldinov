@@ -179,7 +179,8 @@ function render(next, moveFocus = false) {
   }
 
   const set = visibleSlides();
-  const selected = set.includes(currentSlide) ? currentSlide : set[0];
+  const preloaded = !currentSlide && !detail && set.find((slide) => slide.element === currentImage);
+  const selected = set.includes(currentSlide) ? currentSlide : preloaded || set[0];
   showSlide(selected);
   for (const arrow of carouselArrows) arrow.disabled = set.length < 2;
   schedule();
@@ -222,7 +223,7 @@ function showSlide(slide, announce = false) {
   currentSlide = slide || null;
   const request = ++slideRequest;
   if (!slide) {
-    for (const image of field.querySelectorAll('img')) {
+    for (const image of field.querySelectorAll('.slide')) {
       image.classList.remove('is-current', 'is-outgoing');
       image.setAttribute('aria-hidden', 'true');
     }
@@ -242,41 +243,40 @@ function showSlide(slide, announce = false) {
   caption.dataset.route = project.href;
   if (announce) status.textContent = slide.alt;
 
-  const image = slide.image;
+  const element = slide.element;
   const commit = () => {
     if (request !== slideRequest) return;
-    for (const previous of field.querySelectorAll('img')) {
+    for (const previous of field.querySelectorAll('.slide')) {
       previous.classList.remove('is-current', 'is-outgoing');
       previous.setAttribute('aria-hidden', 'true');
     }
-    const outgoing = currentImage !== image && currentImage?.isConnected ? currentImage : null;
+    const outgoing = currentImage !== element && currentImage?.isConnected ? currentImage : null;
     outgoing?.classList.add('is-outgoing');
-    const fresh = !image.isConnected;
+    const fresh = !element.isConnected;
     if (fresh) {
-      field.append(image);
-      image.getBoundingClientRect();
+      field.append(element);
+      element.getBoundingClientRect();
     }
-    image.removeAttribute('aria-hidden');
-    image.classList.add('is-current');
-    currentImage = image;
+    if (element instanceof HTMLImageElement) element.removeAttribute('aria-hidden');
+    element.classList.add('is-current');
+    currentImage = element;
     if (outgoing) {
       const clearOutgoing = () => {
         if (request === slideRequest) outgoing.classList.remove('is-outgoing');
       };
       if (motion.matches) clearOutgoing();
       else {
-        image.addEventListener('transitionend', clearOutgoing, { once: true });
+        element.addEventListener('transitionend', clearOutgoing, { once: true });
         setTimeout(clearOutgoing, 1300);
       }
     }
   };
-  if (image.complete && image.naturalWidth) commit();
-  else image.decode().then(commit).catch(() => {
+  if (!(element instanceof HTMLImageElement) || (element.complete && element.naturalWidth)) commit();
+  else element.decode().then(commit).catch(() => {
     if (request !== slideRequest) return;
-    for (const previous of field.querySelectorAll('img')) {
-      previous.classList.remove('is-current', 'is-outgoing');
-      previous.setAttribute('aria-hidden', 'true');
-    }
+    slide.element = colorSlide(project);
+    currentSlide = null;
+    showSlide(slide);
   });
 }
 
@@ -313,6 +313,14 @@ function back() {
   }
 }
 
+function colorSlide(project) {
+  const element = document.createElement('div');
+  element.className = 'slide color-slide';
+  element.dataset.category = project.category;
+  element.setAttribute('aria-hidden', 'true');
+  return element;
+}
+
 function install(data) {
   homeIntro = data.intro;
   const ids = new Map();
@@ -326,15 +334,19 @@ function install(data) {
   });
   slides = projects.flatMap((project) => {
     const series = project.cover === defaultCover;
+    const brand = series ? 'AURIX' : '';
     const assets = series ? aurix.map(([file, alt]) => ['./images/aurix/' + file + '.webp', alt])
       : project.cover ? [[project.cover, project.title]] : [];
+    if (!assets.length) return [{ element: colorSlide(project), project, alt: project.title, brand }];
     return assets.map(([src, alt], index) => {
-      const image = index === 0 && series && currentImage ? currentImage : new Image();
-      image.className = image.isConnected ? 'slide is-current' : 'slide';
-      image.alt = alt;
-      image.decoding = 'async';
-      if (!image.isConnected) image.src = src;
-      return { image, project, alt, brand: series ? 'AURIX' : '' };
+      const element = index === 0 && series && currentImage ? currentImage : new Image();
+      element.className = element.isConnected ? 'slide is-current' : 'slide';
+      element.classList.toggle('project-cover', !series);
+      element.dataset.category = project.category;
+      element.alt = alt;
+      element.decoding = 'async';
+      if (!element.isConnected) element.src = src;
+      return { element, project, alt, brand };
     });
   });
   for (const [key, section] of Object.entries(categories)) {

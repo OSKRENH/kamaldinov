@@ -13,8 +13,8 @@
       "title": "Проекты AURIX",
       "category": "advertising",
       "subcategory": "Оффлайн",
-      "description": "",
-      "cover": "",
+      "description": "Пример оформления наружных носителей AURIX. На обложке — серия фирменных флагов.",
+      "cover": "https://oskrenh.github.io/kamaldinov/images/projects/aurix-outdoor.webp",
       "url": ""
     },
     {
@@ -37,9 +37,49 @@
       "title": "Пополам",
       "category": "pets",
       "subcategory": "",
-      "description": "",
-      "cover": "",
+      "description": "Сервис совместного выбора. Два человека отмечают понравившиеся варианты и видят совпадения.",
+      "cover": "https://oskrenh.github.io/kamaldinov/images/projects/popolam.webp",
       "url": "https://popolam.online/"
+    },
+    {
+      "title": "Эталонный мэтч",
+      "category": "advertising",
+      "subcategory": "Digital",
+      "description": "Концепция рекламной кампании в формате карточек и свайпов.",
+      "cover": "https://oskrenh.github.io/kamaldinov/images/projects/etalon-match.webp",
+      "url": ""
+    },
+    {
+      "title": "Брендбук AURIX",
+      "category": "identity",
+      "subcategory": "Брендбуки",
+      "description": "Руководство по фирменному стилю AURIX.",
+      "cover": "https://oskrenh.github.io/kamaldinov/images/projects/aurix-brandbook.webp",
+      "url": ""
+    },
+    {
+      "title": "Календарь «Эталон» 2027",
+      "category": "editions",
+      "subcategory": "Печатные",
+      "description": "Печатный календарь к 40-летию Группы «Эталон».",
+      "cover": "https://oskrenh.github.io/kamaldinov/images/projects/etalon-calendar.webp",
+      "url": ""
+    },
+    {
+      "title": "Буклет AURIX",
+      "category": "editions",
+      "subcategory": "Цифровые",
+      "description": "Пример многостраничной вёрстки. На обложке — мокап из материалов AURIX.",
+      "cover": "https://oskrenh.github.io/kamaldinov/images/projects/aurix-booklet.webp",
+      "url": ""
+    },
+    {
+      "title": "Презентация «Соколин Парк»",
+      "category": "presentations",
+      "subcategory": "",
+      "description": "Презентация нового позиционирования проекта и вариантов названия.",
+      "cover": "https://oskrenh.github.io/kamaldinov/images/projects/sokolin-presentation.webp",
+      "url": ""
     }
   ]
 }

@@ -54,7 +54,7 @@ button, a[href] { cursor: pointer; }
   z-index: -1;
   inset: 28.703704% 0 0 30.729167%;
   overflow: hidden;
-  background: #f2f2f2;
+  background: #f1e5d6;
   transition: inset 1000ms var(--ease);
 }
 .slide {
@@ -67,6 +67,13 @@ button, a[href] { cursor: pointer; }
   transition: opacity 1200ms ease;
 }
 .slide.is-current { opacity: 1; z-index: 1; }
+.project-cover { object-fit: contain; }
+.color-slide, .project-cover { background-color: #f1e5d6; }
+.slide[data-category="advertising"] { background-color: #dce8f9; }
+.slide[data-category="identity"] { background-color: #eadff5; }
+.slide[data-category="editions"] { background-color: #e7ead6; }
+.slide[data-category="presentations"] { background-color: #f4dfcf; }
+.slide[data-category="pets"] { background-color: #f6e1e8; }
 .image-field::after {
   position: absolute;
   z-index: 2;
@@ -79,7 +86,7 @@ button, a[href] { cursor: pointer; }
   transition: opacity var(--move);
 }
 [data-view="detail"] .image-field { inset: 0; }
-[data-view="detail"] .image-field:has(.slide.is-current)::after { opacity: 1; }
+[data-view="detail"] .image-field:has(img.is-current)::after { opacity: 1; }
 
 .name, .project-title, .top-action {
   font-size: min(3.90625vw, 6.944444dvh);
