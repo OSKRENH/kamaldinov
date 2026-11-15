@@ -1,4 +1,4 @@
-/* Editorial opening: grey canvas and artwork shrink together over 3 seconds. */
+/* Home opening: the grey canvas and contained covers shrink for exactly 3s. */
 .portfolio[data-opening="reel"] .image-field {
   inset: 0;
   transition: none;
@@ -29,31 +29,39 @@
   transition: opacity 90ms linear;
 }
 .opening-reel-image.is-active { opacity: 1; }
-
 .portfolio[data-opening="settled"] .opening-reel {
   opacity: 0;
   transition: opacity 300ms ease;
 }
 
-/* All regular UI enters at once. Only gallery metadata waits until t = 3s. */
+/* Staggered choreography: 1 Ivan, 2 surname, 3 CV,
+   4 description, 5 navigation. All reveal within the same 3s. */
 .portfolio[data-opening] .given-name span,
 .portfolio[data-opening] .family-name span,
-.portfolio[data-opening] .cv-button span,
+.portfolio[data-opening] .cv-button span {
+  opacity: 0;
+  transform: translate3d(var(--shift), 0, 0);
+  animation: none;
+  transition: opacity 670ms ease, transform 850ms var(--ease);
+}
 .portfolio[data-opening] .intro,
 .portfolio[data-opening] .categories {
   opacity: 0;
-  transform: translate3d(clamp(20px, 3vw, 80px), 0, 0);
-  animation: none;
-  transition: opacity 700ms ease, transform 950ms var(--ease);
+  transform: translate3d(clamp(28px, 4vw, 100px), 0, 0);
+  pointer-events: none;
+  transition: opacity 670ms ease, transform 850ms var(--ease);
 }
-.portfolio[data-opening].opening-ui-visible .given-name span,
-.portfolio[data-opening].opening-ui-visible .family-name span,
-.portfolio[data-opening].opening-ui-visible .cv-button span,
-.portfolio[data-opening].opening-ui-visible .intro,
-.portfolio[data-opening].opening-ui-visible .categories {
+.portfolio[data-opening].opening-show-given .given-name span,
+.portfolio[data-opening].opening-show-family .family-name span,
+.portfolio[data-opening].opening-show-cv .cv-button span,
+.portfolio[data-opening].opening-show-description .intro,
+.portfolio[data-opening].opening-show-navigation .categories {
   opacity: 1;
   transform: translate3d(0, 0, 0);
+  pointer-events: auto;
 }
+
+/* The gallery-only caption and arrows remain hidden until the field lands. */
 .portfolio[data-opening] .caption,
 .portfolio[data-opening] .carousel-controls {
   opacity: 0;
