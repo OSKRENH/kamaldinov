@@ -64,6 +64,8 @@ export function createOpening({ page, field, motion, selectSlide, onLanding, onF
       const element = slide.collageCovers ? document.createElement('div') : images[0];
       if (slide.collageCovers) {
         element.className = 'opening-reel-image infographic-stack';
+        element.style.setProperty('--preview',
+          'url(' + JSON.stringify(slide.project.cover) + ')');
         element.append(...images);
       }
       return { element, images, slide };
