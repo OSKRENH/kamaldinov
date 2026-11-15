@@ -1,5 +1,5 @@
 // First-visit choreography for the portfolio homepage.
-// The reel runs for exactly 3 seconds after the covers have decoded.
+// UI starts immediately; the cover reel plays for 3 seconds once images are ready.
 const REEL_MS = 3000;
 const SETTLE_MS = 1140;
 
@@ -9,6 +9,7 @@ export function createOpening({ page, field, motion, selectSlide, onFinish }) {
   let frame = 0;
   let resolveFrame = null;
   let finished = false;
+  const revealTimers = [];
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const stillCurrent = (id) => id === generation && !finished;
@@ -18,6 +19,7 @@ export function createOpening({ page, field, motion, selectSlide, onFinish }) {
     finished = true;
     generation++;
     cancelAnimationFrame(frame);
+    for (const timer of revealTimers) clearTimeout(timer);
     resolveFrame?.();
     resolveFrame = null;
     reel?.remove();
@@ -34,13 +36,30 @@ export function createOpening({ page, field, motion, selectSlide, onFinish }) {
     onFinish();
   }
 
+  // Start the editorial UI choreography while the background is still full-screen.
+  // Only the image-gallery caption and arrows wait for the background to settle.
+  function startInterface(id) {
+    const reveals = [
+      ['opening-show-given', 90],
+      ['opening-show-family', 330],
+      ['opening-show-cv', 600],
+      ['opening-show-description', 870],
+      ['opening-show-navigation', 1130],
+    ];
+    for (const [className, at] of reveals) {
+      revealTimers.push(setTimeout(() => {
+        if (stillCurrent(id)) page.classList.add(className);
+      }, at));
+    }
+  }
+
   async function play(slides) {
     if (finished || motion.matches || !reel || !slides.length) {
       finish();
       return;
     }
     const id = ++generation;
-    page.setAttribute('aria-busy', 'true');
+    startInterface(id);
 
     // Decode images before the timed reel to avoid flashing blank frames.
     const prepared = await Promise.all(slides.filter((item) => item.project.cover).map(async (slide) => {
@@ -62,6 +81,7 @@ export function createOpening({ page, field, motion, selectSlide, onFinish }) {
 
     reel.replaceChildren(...posters.map(({ image }) => {
       image.classList.add('opening-reel-image');
+      image.dataset.orientation = image.naturalWidth > image.naturalHeight ? 'wide' : 'portrait';
       image.setAttribute('aria-hidden', 'true');
       image.draggable = false;
       return image;
@@ -105,23 +125,12 @@ export function createOpening({ page, field, motion, selectSlide, onFinish }) {
     await sleep(SETTLE_MS);
     if (!stillCurrent(id)) return;
 
+    // The regular cover is now occupying its final gallery rectangle.
+    // Reveal only the carousel's own controls after the shrink is complete.
     reel.remove();
     page.dataset.opening = 'sequence';
-
-    // Order from the design: 1 / 2 / 3, then 4 / 5 from right to left.
-    const reveals = [
-      ['opening-show-given', 350],
-      ['opening-show-family', 350],
-      ['opening-show-cv', 440],
-      ['opening-show-description', 370],
-      ['opening-show-navigation', 300],
-      ['opening-show-extras', 1000],
-    ];
-    for (const [className, delay] of reveals) {
-      if (!stillCurrent(id)) return;
-      page.classList.add(className);
-      await sleep(delay);
-    }
+    page.classList.add('opening-show-extras');
+    await sleep(850);
     if (stillCurrent(id)) finish();
   }
 
