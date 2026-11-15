@@ -11,6 +11,9 @@ const projectNav = document.querySelector('#projects');
 const projectInfo = document.querySelector('#project-info');
 const projectTitle = document.querySelector('#project-title');
 const name = document.querySelector('.name');
+const intro = document.querySelector('#intro');
+const advertisingIntro = 'Рекламные концепции и макеты любой сложности.\nИдея, публикация и/или подготовка в производство.';
+let homeIntro = intro.textContent;
 const cv = document.querySelector('.cv-button');
 const cvDialog = document.querySelector('#cv');
 const detailBack = document.querySelector('.detail-back');
@@ -107,15 +110,23 @@ function renderMenus(next) {
   if (category && formatCategory !== category) {
     formatCategory = category;
     const items = formatsFor(category).map((label) => link(label, path(category, label)));
-    formatNav.replaceChildren(...items);
+    const sectionBack = link('← ' + categories[category].label, path(category));
+    sectionBack.className = 'section-back';
+    sectionBack.dataset.sectionBack = '';
+    formatNav.replaceChildren(...items, sectionBack);
     if (route?.view === 'formats' && view === 'formats' && !motion.matches) {
       formatNav.animate([
         { opacity: 0, transform: 'translateX(24px)' },
         { opacity: 1, transform: 'translateX(0)' },
-      ], { duration: 1000, delay: 1000, fill: 'backwards', easing: 'cubic-bezier(.22, 1, .36, 1)' });
+      ], { duration: 650, easing: 'cubic-bezier(.22, 1, .36, 1)' });
     }
   }
-  for (const anchor of formatNav.querySelectorAll('a')) {
+  const sectionBack = formatNav.querySelector('.section-back');
+  if (sectionBack) {
+    sectionBack.inert = view !== 'projects';
+    sectionBack.setAttribute('aria-hidden', String(view !== 'projects'));
+  }
+  for (const anchor of formatNav.querySelectorAll('a:not(.section-back)')) {
     if (anchor.dataset.route === path(category, format)) anchor.setAttribute('aria-current', 'true');
     else anchor.removeAttribute('aria-current');
   }
@@ -137,10 +148,7 @@ function renderMenus(next) {
 
 let focusTimer;
 function render(next, moveFocus = false) {
-  const lowerBlocks = [categoryNav, formatNav, projectNav, projectInfo];
-  const hiddenBefore = lowerBlocks.map((block) => block.inert);
   clearTimeout(focusTimer);
-  lowerBlocks.forEach((block) => block.classList.remove('is-entering'));
   renderMenus(next);
   const { view, project, category } = next;
   const detail = view === 'detail';
@@ -157,11 +165,9 @@ function render(next, moveFocus = false) {
   detailBack.inert = !detail;
   name.inert = detail;
   cv.inert = detail;
-  document.querySelector('#intro').inert = detail;
+  intro.inert = detail;
+  if (!detail) intro.textContent = view === 'projects' && category === 'advertising' ? advertisingIntro : homeIntro;
   caption.inert = detail;
-  lowerBlocks.forEach((block, index) => {
-    if (hiddenBefore[index] && !block.inert) block.classList.add('is-entering');
-  });
 
   if (detail) {
     projectTitle.textContent = project.title;
@@ -178,7 +184,7 @@ function render(next, moveFocus = false) {
     const target = { home: categoryNav, formats: formatNav, projects: projectNav }[view];
     focusTimer = setTimeout(() => {
       (detail ? projectTitle : target?.querySelector('a, button') || formatNav.querySelector('a'))?.focus({ preventScroll: true });
-    }, motion.matches ? 0 : 2000);
+    }, motion.matches ? 0 : 780);
   }
 }
 
@@ -283,7 +289,7 @@ function back() {
 }
 
 function install(data) {
-  document.querySelector('#intro').textContent = data.intro;
+  homeIntro = data.intro;
   const ids = new Map();
   projects = data.projects.map((project) => {
     const base = project.title.toLocaleLowerCase('ru').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '') || 'project';
@@ -323,8 +329,14 @@ page.addEventListener('click', (event) => {
     event.preventDefault();
     const currentFormat = route?.view === 'projects' && routeLink.closest('#formats')
       && routeLink.getAttribute('aria-current');
-    if (currentFormat) back();
-    else navigate(routeLink.dataset.route);
+    if (routeLink.hasAttribute('data-section-back') || currentFormat) {
+      const destination = parentPath(route);
+      if (history.state?.from === destination) back();
+      else {
+        history.replaceState(null, '', destination || location.pathname + location.search);
+        render(readRoute(), true);
+      }
+    } else navigate(routeLink.dataset.route);
   }
   if (event.target.closest('[data-back]')) back();
   const arrow = event.target.closest('[data-step]');
