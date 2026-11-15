@@ -24,7 +24,8 @@ button {
   border: 0;
   background: none;
 }
-button, a[href] { cursor: pointer; }
+button, a[href] { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+html[data-input="touch"] :focus-visible { outline: none; }
 :focus-visible { outline: 1px solid currentColor; outline-offset: 3px; }
 
 .portfolio {
@@ -302,12 +303,24 @@ dialog button { margin-top: 1.2em; text-decoration: underline; }
     background: var(--preview) center / cover no-repeat;
     filter: blur(20px) brightness(.92) saturate(.75);
   }
-  .image-field:has(.project-cover.is-current) ~ .caption,
-  .image-field:has(.project-cover.is-current) ~ .carousel-controls {
-    width: fit-content;
-    max-width: calc(var(--second) - var(--gutter) - .75em);
-    background: rgb(255 255 255 / .9);
-    box-shadow: 0 0 0 .25em rgb(255 255 255 / .9);
+  .portfolio:not([data-view="detail"]) .project-cover img {
+    position: absolute;
+    inset: auto 0 0;
+    width: 100%;
+    height: 88%;
+    object-position: center bottom;
+  }
+  .portfolio:not([data-view="detail"]) .project-cover[data-orientation="wide"] img {
+    left: auto;
+    width: 86%;
+    height: 86%;
+    object-fit: cover;
+    object-position: left bottom;
+  }
+  .portfolio:not([data-view="detail"]) .caption,
+  .portfolio:not([data-view="detail"]) .carousel-controls {
+    color: var(--cover-ink, #0d0d0d);
+    text-shadow: 0 1px 3px var(--cover-text-shadow, transparent);
   }
 
   .image-field::after {
@@ -332,6 +345,7 @@ dialog button { margin-top: 1.2em; text-decoration: underline; }
     font-size: inherit;
   }
   .carousel-controls button {
+    text-shadow: inherit;
     min-width: 1em;
     position: relative;
   }
@@ -363,7 +377,9 @@ dialog button { margin-top: 1.2em; text-decoration: underline; }
   transition: color 240ms ease;
 }
 .top-action button { transition: transform var(--move), opacity var(--fade), color 240ms ease; }
-.caption-link[href]:hover, .top-action button:hover, dialog button:hover { color: #585858; }
+@media (hover: hover) {
+  .caption-link[href]:hover, .top-action button:hover, dialog button:hover { color: #585858; }
+}
 .caption-link #slide-title {
   text-decoration: underline;
   text-decoration-color: transparent;

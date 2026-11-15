@@ -1,11 +1,14 @@
 import { categories, normalize } from './admin/model.js';
 import { bookFor, brandbookGallery } from './brandbooks.js?v=1';
+import { updateCoverContrast } from './cover-contrast.js?v=1';
 
 const page = document.querySelector('#portfolio');
 const field = document.querySelector('.image-field');
 const caption = document.querySelector('#caption-link');
 const controls = document.querySelector('.carousel-controls');
 const carouselArrows = controls.querySelectorAll('button');
+const captionBox = document.querySelector('.caption');
+const mobileCover = matchMedia('(max-aspect-ratio: 1/1)');
 const status = document.querySelector('#slide-status');
 const categoryNav = document.querySelector('#categories');
 const formatNav = document.querySelector('#formats');
@@ -173,6 +176,7 @@ function render(next, moveFocus = false) {
   const set = visibleSlides();
   const selected = set.includes(currentSlide) ? currentSlide : set[0];
   showSlide(selected);
+  refreshCoverContrast();
   for (const arrow of carouselArrows) arrow.disabled = set.length < 2;
   schedule();
 
@@ -220,6 +224,7 @@ function showSlide(slide, announce = false) {
     }
     caption.removeAttribute('href');
     caption.hidden = true;
+    refreshCoverContrast();
     return;
   }
 
@@ -240,6 +245,9 @@ function showSlide(slide, announce = false) {
     }
     const outgoing = currentElement !== element && currentElement?.isConnected ? currentElement : null;
     outgoing?.classList.add('is-outgoing');
+    if (slide.preview) {
+      element.dataset.orientation = slide.preview.naturalWidth > slide.preview.naturalHeight ? 'wide' : 'portrait';
+    }
     const fresh = !element.isConnected;
     if (fresh) {
       field.append(element);
@@ -248,6 +256,7 @@ function showSlide(slide, announce = false) {
     if (slide.preview) element.removeAttribute('aria-hidden');
     element.classList.add('is-current');
     currentElement = element;
+    refreshCoverContrast();
     if (outgoing) {
       const clearOutgoing = () => {
         if (request === slideRequest) outgoing.classList.remove('is-outgoing');
@@ -270,6 +279,24 @@ function showSlide(slide, announce = false) {
     showSlide(slide);
   });
 }
+
+let contrastFrame;
+function refreshCoverContrast() {
+  cancelAnimationFrame(contrastFrame);
+  if (!mobileCover.matches || route?.view === 'detail') return;
+  contrastFrame = requestAnimationFrame(() => updateCoverContrast(currentElement, [captionBox, controls]));
+}
+window.addEventListener('resize', refreshCoverContrast);
+mobileCover.addEventListener('change', refreshCoverContrast);
+field.addEventListener('transitionend', (event) => {
+  if (event.target === field) refreshCoverContrast();
+});
+document.addEventListener('pointerdown', (event) => {
+  document.documentElement.dataset.input = event.pointerType;
+}, true);
+document.addEventListener('keydown', () => {
+  delete document.documentElement.dataset.input;
+}, true);
 
 function step(direction, announce = true) {
   const set = visibleSlides();
