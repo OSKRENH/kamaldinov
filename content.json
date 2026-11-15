@@ -58,8 +58,8 @@
     {
       "title": "State of Account-Based Sales Development Report",
       "client": "Sales for Life × Engagio",
-      "category": "editions",
-      "subcategory": "Цифровые",
+      "category": "presentations",
+      "subcategory": "",
       "description": "",
       "cover": "https://oskrenh.github.io/kamaldinov/images/drive/account-based-sales-development.webp",
       "url": "https://drive.google.com/file/d/116wy5I2ZPpeyeyUVNpvD_RzZXCnrfKmm/view?usp=drivesdk"
@@ -76,8 +76,8 @@
     {
       "title": "Artificial Intelligence, Big Data, Machine Learning, and Deep Learning",
       "client": "Singularity University",
-      "category": "advertising",
-      "subcategory": "Digital",
+      "category": "presentations",
+      "subcategory": "",
       "description": "",
       "cover": "https://oskrenh.github.io/kamaldinov/images/drive/ai-and-big-data-clean.webp",
       "url": "https://drive.google.com/file/d/1f_oxMyOeWpleezE4sVxg6zbdo3qT54di/view?usp=drivesdk"
@@ -129,12 +129,21 @@
     },
     {
       "title": "ITM Brand",
-      "client": "ITM",
+      "client": "Иннотехмаш",
       "category": "identity",
       "subcategory": "Брендбуки",
       "description": "",
       "cover": "https://oskrenh.github.io/kamaldinov/images/brandbooks/itm/01.webp",
       "url": ""
+    },
+    {
+      "title": "Пополам",
+      "client": "Пополам",
+      "category": "pets",
+      "subcategory": "",
+      "description": "Сервис совместного выбора. Главная страница, адаптированная для десктопа и телефона.",
+      "cover": "https://oskrenh.github.io/kamaldinov/images/pets/popolam-safari-iphone.webp",
+      "url": "https://popolam.online/"
     }
   ]
 }
