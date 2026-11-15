@@ -2,14 +2,6 @@
   "intro": "Коммуникационный дизайнер с опытом работы более 15 лет. Разрабатываю рекламу, айдентику, цифровые и печатные продукты.\nВизуальный стиль, иерархия и системы, которые работают на любых носителях — от книжного разворота до рекламного щита.",
   "projects": [
     {
-      "title": "Кампания Эталон 2026",
-      "category": "advertising",
-      "subcategory": "Оффлайн",
-      "description": "Рекламная кампания жилого квартала SHAGAL. Наружные форматы 15 × 5 и 6 × 3 м.",
-      "cover": "https://oskrenh.github.io/kamaldinov/images/advertising/etalon-2026-15x5.jpg",
-      "url": ""
-    },
-    {
       "title": "Spentys Playbook",
       "category": "editions",
       "subcategory": "Цифровые",
