@@ -7,10 +7,10 @@
   <meta name="theme-color" content="#ffffff">
   <title>Иван Камальдинов — портфолио</title>
   <link rel="preload" href="./fonts/LTSuperior-Regular.otf" as="font" type="font/otf" crossorigin>
-  <link rel="stylesheet" href="./portfolio.css?v=mobile-cover-8">
+  <link rel="stylesheet" href="./portfolio.css?v=desktop-blur-1">
   <link rel="stylesheet" href="./brandbooks.css?v=1">
-  <link rel="stylesheet" href="./opening.css?v=4"
-  <link rel="stylesheet" href="./gallery-transitions.css?v=1">
+  <link rel="stylesheet" href="./opening.css?v=5">
+  <link rel="stylesheet" href="./gallery-transitions.css?v=counter-stack-2">
   <script type="module" src="./portfolio.js?v=gallery-motion-1"></script>
 </head>
 <body>
@@ -40,8 +40,10 @@
       <div class="slide-counter" role="status" aria-live="polite" aria-atomic="true" aria-label="Номер изображения">
         <span class="counter-window"><span class="counter-number">01</span></span><span class="counter-divider">/</span><span class="counter-total">15</span>
       </div>
-      <button type="button" data-step="-1" aria-label="Предыдущее изображение">←</button>
-      <button type="button" data-step="1" aria-label="Следующее изображение">→</button>
+      <div class="carousel-arrows">
+        <button type="button" data-step="-1" aria-label="Предыдущее изображение">←</button>
+        <button type="button" data-step="1" aria-label="Следующее изображение">→</button>
+      </div>
     </div>
     <span id="slide-status" class="visually-hidden" aria-live="polite"></span>
 
