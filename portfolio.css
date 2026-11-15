@@ -97,6 +97,7 @@ button, a[href] { cursor: pointer; }
   text-decoration-thickness: .045em;
   text-underline-offset: .12em;
 }
+.cv-button span { text-decoration: underline; text-decoration-thickness: .045em; text-underline-offset: .12em; }
 .detail-back { position: absolute; top: 0; left: 0; }
 .project-title {
   left: var(--gutter);

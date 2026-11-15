@@ -23,15 +23,15 @@ const aurix = [
   ['cardholder', 'Кардхолдер AURIX в фирменной упаковке'],
   ['bag', 'Фирменный пакет AURIX'],
   ['glasses', 'Бокалы в подарочной упаковке AURIX'],
-  ['cards', 'Визитки AURIX'],
-  ['envelope', 'Конверт для документов AURIX'],
+  ['pen', 'Фирменная ручка AURIX'],
+  ['umbrella', 'Фирменный зонт AURIX'],
 ];
 const defaultCover = 'https://oskrenh.github.io/kamaldinov/images/aurix/cup.webp';
 const bundledProject = {
   category: 'identity',
   subcategory: 'Мерч',
   title: 'Мерч для офиса продаж',
-  description: 'Фирменные материалы и подарки для AURIX: визитки и конверты, блокноты, упаковка, стаканы и шоколад. Знак, паттерн и палитра бренда связывают предметы разных форматов в одну серию.',
+  description: 'Фирменные материалы и подарки для AURIX: блокноты, упаковка, ручка, зонт, стаканы и шоколад. Знак, паттерн и палитра бренда связывают предметы разных форматов в одну серию.',
   cover: defaultCover,
   url: '',
 };
@@ -221,7 +221,8 @@ function showSlide(slide, announce = false) {
       previous.classList.remove('is-current', 'is-outgoing');
       previous.setAttribute('aria-hidden', 'true');
     }
-    if (currentImage !== image && currentImage?.isConnected) currentImage.classList.add('is-outgoing');
+    const outgoing = currentImage !== image && currentImage?.isConnected ? currentImage : null;
+    outgoing?.classList.add('is-outgoing');
     const fresh = !image.isConnected;
     if (fresh) {
       field.append(image);
@@ -230,6 +231,16 @@ function showSlide(slide, announce = false) {
     image.removeAttribute('aria-hidden');
     image.classList.add('is-current');
     currentImage = image;
+    if (outgoing) {
+      const clearOutgoing = () => {
+        if (request === slideRequest) outgoing.classList.remove('is-outgoing');
+      };
+      if (motion.matches) clearOutgoing();
+      else {
+        image.addEventListener('transitionend', clearOutgoing, { once: true });
+        setTimeout(clearOutgoing, 600);
+      }
+    }
   };
   if (image.complete && image.naturalWidth) commit();
   else image.decode().then(commit).catch(() => {
