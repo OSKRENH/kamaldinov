@@ -141,40 +141,58 @@
   }
 }
 
-/* Popolam: a real 16:9 desktop screenshot rendered from the app's code,
-   set inside a vector-built Safari browser. The artwork itself is transparent,
-   so it needs no background panel and no second iPhone mockup. */
+/* Popolam full-height Safari document.
+   Keep the SAME rendered browser width as the former 1624x992 mockup; only
+   the screenshot/document height grows. The gallery clips the overflowing
+   document, instead of scaling it to fit the grey window. */
 .project-cover[data-feature="popolam"]::before {
   display: none;
 }
-.portfolio:not([data-view="detail"]) .project-cover[data-feature="popolam"] > img {
-  display: block;
-  position: relative;
-  inset: auto;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-  max-width: none;
-}
-@media (max-aspect-ratio: 1/1) {
-  /* Same positioning as FLAT: a large wide cover cropped by the right and
-     bottom edges of the grey gallery instead of scaled into a small card. */
-  .portfolio:not([data-view="detail"]) .project-cover[data-feature="popolam"] {
-    padding: 0;
-  }
+@media (min-aspect-ratio: 1/1) {
   .portfolio:not([data-view="detail"]) .project-cover[data-feature="popolam"] > img,
-  .opening-reel-image[data-feature="popolam"] {
+  .portfolio:not([data-view="detail"]) .opening-reel-image[data-feature="popolam"] {
+    --media-inset: clamp(16px, 2.604167vw, 100px);
     position: absolute;
     inset: auto;
-    left: 15%;
-    bottom: 0;
-    width: auto;
-    height: 86%;
+    top: var(--media-inset);
+    left: 50%;
+    translate: -50% 0;
+    /* Prior object-fit:contain used min(content width, content height *
+       1624/992). Recreate the exact ORIGINAL scale independently of the
+       new full-page image height. */
+    width: 100%;
+    width: min(
+      calc(100cqw - 2 * var(--media-inset)),
+      calc((100cqh - 2 * var(--media-inset)) * 1.637096774)
+    );
+    height: auto;
     max-width: none;
     max-height: none;
     padding: 0;
     object-fit: contain;
-    object-position: left bottom;
+    object-position: center top;
+  }
+}
+@media (max-aspect-ratio: 1/1) {
+  .portfolio:not([data-view="detail"]) .project-cover[data-feature="popolam"] {
+    padding: 0;
+  }
+  .portfolio:not([data-view="detail"]) .project-cover[data-feature="popolam"] > img,
+  .portfolio:not([data-view="detail"]) .opening-reel-image[data-feature="popolam"] {
+    position: absolute;
+    inset: auto;
+    left: 15%;
+    top: 14%;
+    top: 14cqh;
+    /* Previously 86% of field height with a 1624:992 aspect ratio.
+       Set that SAME width rather than 86% height, so the browser now
+       extends naturally past the bottom of the gallery. */
+    width: 140.80645cqh;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    padding: 0;
+    object-fit: contain;
+    object-position: left top;
   }
 }
