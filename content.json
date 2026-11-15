@@ -3,6 +3,7 @@
   "projects": [
     {
       "title": "Spentys Playbook",
+      "client": "Spentys",
       "category": "editions",
       "subcategory": "Цифровые",
       "description": "",
@@ -11,6 +12,7 @@
     },
     {
       "title": "The 5 Secrets of Financial Health and Wellness",
+      "client": "Center for Financial Social Work",
       "category": "editions",
       "subcategory": "Цифровые",
       "description": "",
@@ -19,6 +21,7 @@
     },
     {
       "title": "Portland",
+      "client": "Sailing Virgins",
       "category": "editions",
       "subcategory": "Цифровые",
       "description": "",
@@ -27,6 +30,7 @@
     },
     {
       "title": "Jabali ISR Technical Specifications",
+      "client": "helvetis",
       "category": "editions",
       "subcategory": "Цифровые",
       "description": "",
@@ -35,6 +39,7 @@
     },
     {
       "title": "Seervision Manual",
+      "client": "Seervision",
       "category": "editions",
       "subcategory": "Цифровые",
       "description": "",
@@ -43,6 +48,7 @@
     },
     {
       "title": "3 Crucial Tips for Recruiting in the Insurance Industry",
+      "client": "ideal.",
       "category": "editions",
       "subcategory": "Цифровые",
       "description": "",
@@ -51,6 +57,7 @@
     },
     {
       "title": "State of Account-Based Sales Development Report",
+      "client": "Sales for Life × Engagio",
       "category": "editions",
       "subcategory": "Цифровые",
       "description": "",
@@ -59,6 +66,7 @@
     },
     {
       "title": "SU Ecosystem",
+      "client": "Singularity University",
       "category": "advertising",
       "subcategory": "Digital",
       "description": "",
@@ -67,6 +75,7 @@
     },
     {
       "title": "Artificial Intelligence, Big Data, Machine Learning, and Deep Learning",
+      "client": "Singularity University",
       "category": "advertising",
       "subcategory": "Digital",
       "description": "",
@@ -75,6 +84,7 @@
     },
     {
       "title": "SU Membership",
+      "client": "Singularity University",
       "category": "advertising",
       "subcategory": "Digital",
       "description": "",
@@ -83,6 +93,7 @@
     },
     {
       "title": "CCSA Report",
+      "client": "CCSA",
       "category": "editions",
       "subcategory": "Печатные",
       "description": "",
@@ -91,6 +102,7 @@
     },
     {
       "title": "Music Theory for Electronic Musicians Book",
+      "client": "J. Anthony Allen",
       "category": "editions",
       "subcategory": "Печатные",
       "description": "",
@@ -99,6 +111,7 @@
     },
     {
       "title": "FLAT",
+      "client": "FLAT",
       "category": "identity",
       "subcategory": "Брендбуки",
       "description": "",
@@ -107,6 +120,7 @@
     },
     {
       "title": "A5",
+      "client": "A5",
       "category": "identity",
       "subcategory": "Брендбуки",
       "description": "",
@@ -115,6 +129,7 @@
     },
     {
       "title": "ITM Brand",
+      "client": "ITM",
       "category": "identity",
       "subcategory": "Брендбуки",
       "description": "",
