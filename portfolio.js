@@ -4,14 +4,12 @@ const page = document.querySelector('#portfolio');
 const field = document.querySelector('.image-field');
 const caption = document.querySelector('#caption-link');
 const controls = document.querySelector('.carousel-controls');
-const playback = document.querySelector('#playback');
 const status = document.querySelector('#slide-status');
 const categoryNav = document.querySelector('#categories');
 const formatNav = document.querySelector('#formats');
 const projectNav = document.querySelector('#projects');
 const projectInfo = document.querySelector('#project-info');
 const projectTitle = document.querySelector('#project-title');
-const projectLink = document.querySelector('#project-link');
 const name = document.querySelector('.name');
 const cv = document.querySelector('.cv-button');
 const cvDialog = document.querySelector('#cv');
@@ -96,15 +94,6 @@ function link(label, href, current = false) {
   return anchor;
 }
 
-function backLink() {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'back-link';
-  button.dataset.back = '';
-  button.textContent = '← Назад';
-  return button;
-}
-
 function renderMenus(next) {
   const { view, category, format } = next;
   for (const anchor of categoryNav.querySelectorAll('a')) {
@@ -117,12 +106,12 @@ function renderMenus(next) {
   if (category && formatCategory !== category) {
     formatCategory = category;
     const items = formatsFor(category).map((label) => link(label, path(category, label)));
-    formatNav.replaceChildren(...items, ...(items.length ? [backLink()] : []));
+    formatNav.replaceChildren(...items);
     if (route?.view === 'formats' && view === 'formats' && !motion.matches) {
       formatNav.animate([
         { opacity: 0, transform: 'translateX(24px)' },
         { opacity: 1, transform: 'translateX(0)' },
-      ], { duration: 340, easing: 'cubic-bezier(.22, 1, .36, 1)' });
+      ], { duration: 1000, delay: 1000, fill: 'backwards', easing: 'cubic-bezier(.22, 1, .36, 1)' });
     }
   }
   for (const anchor of formatNav.querySelectorAll('a')) {
@@ -140,13 +129,17 @@ function renderMenus(next) {
     projectNav.replaceChildren(...items.map((project) => link(project.title, project.href)));
   } else {
     const empty = document.createElement('p');
-    empty.textContent = 'Проекты пока не добавлены.';
+    empty.textContent = '';
     projectNav.replaceChildren(empty);
   }
-  if (!categories[category].filters.length) projectNav.append(backLink());
 }
 
+let focusTimer;
 function render(next, moveFocus = false) {
+  const lowerBlocks = [categoryNav, formatNav, projectNav, projectInfo];
+  const hiddenBefore = lowerBlocks.map((block) => block.inert);
+  clearTimeout(focusTimer);
+  lowerBlocks.forEach((block) => block.classList.remove('is-entering'));
   renderMenus(next);
   const { view, project, category } = next;
   const detail = view === 'detail';
@@ -164,13 +157,13 @@ function render(next, moveFocus = false) {
   cv.inert = detail;
   document.querySelector('#intro').inert = detail;
   caption.inert = detail;
+  lowerBlocks.forEach((block, index) => {
+    if (hiddenBefore[index] && !block.inert) block.classList.add('is-entering');
+  });
 
   if (detail) {
     projectTitle.textContent = project.title;
     document.querySelector('#project-description').textContent = project.description;
-    projectLink.hidden = !project.url;
-    if (project.url) projectLink.href = project.url;
-    else projectLink.removeAttribute('href');
   }
 
   const set = visibleSlides();
@@ -181,7 +174,9 @@ function render(next, moveFocus = false) {
 
   if (moveFocus && (active?.closest('[inert]') || active === document.body)) {
     const target = { home: categoryNav, formats: formatNav, projects: projectNav }[view];
-    (detail ? projectTitle : target?.querySelector('a, button') || formatNav.querySelector('a'))?.focus({ preventScroll: true });
+    focusTimer = setTimeout(() => {
+      (detail ? projectTitle : target?.querySelector('a, button') || formatNav.querySelector('a'))?.focus({ preventScroll: true });
+    }, motion.matches ? 0 : 2000);
   }
 }
 
@@ -238,7 +233,7 @@ function showSlide(slide, announce = false) {
       if (motion.matches) clearOutgoing();
       else {
         image.addEventListener('transitionend', clearOutgoing, { once: true });
-        setTimeout(clearOutgoing, 600);
+        setTimeout(clearOutgoing, 1300);
       }
     }
   };
@@ -262,8 +257,6 @@ function step(direction, announce = true) {
 
 function schedule() {
   clearTimeout(timer);
-  playback.toggleAttribute('data-paused', paused);
-  playback.setAttribute('aria-label', paused ? 'Запустить автопрокрутку' : 'Приостановить автопрокрутку');
   if (!paused && !carouselFocused && !document.hidden && !cvDialog.open && route?.view !== 'detail' && slides.length > 1) {
     timer = setTimeout(() => step(1, false), 5000);
   }
@@ -326,7 +319,10 @@ page.addEventListener('click', (event) => {
   const routeLink = event.target.closest('[data-route]');
   if (routeLink && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
     event.preventDefault();
-    navigate(routeLink.dataset.route);
+    const currentFormat = route?.view === 'projects' && routeLink.closest('#formats')
+      && routeLink.getAttribute('aria-current');
+    if (currentFormat) back();
+    else navigate(routeLink.dataset.route);
   }
   if (event.target.closest('[data-back]')) back();
   const arrow = event.target.closest('[data-step]');
@@ -339,11 +335,6 @@ function updateCarouselFocus() {
 }
 page.addEventListener('focusin', updateCarouselFocus);
 page.addEventListener('focusout', () => queueMicrotask(updateCarouselFocus));
-playback.addEventListener('click', () => {
-  paused = !paused;
-  carouselFocused = false;
-  schedule();
-});
 cv.addEventListener('click', () => { cvDialog.showModal(); schedule(); });
 cvDialog.addEventListener('close', schedule);
 window.addEventListener('popstate', () => render(readRoute(), true));

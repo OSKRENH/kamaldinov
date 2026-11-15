@@ -11,8 +11,8 @@
   color: #0d0d0d;
   background: #fff;
   --ease: cubic-bezier(.22, 1, .36, 1);
-  --move: 560ms var(--ease);
-  --fade: 310ms ease;
+  --move: 1100ms var(--ease);
+  --fade: 750ms ease;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -53,7 +53,7 @@ button, a[href] { cursor: pointer; }
   inset: 28.703704% var(--gutter) 4.62963% 30.729167%;
   overflow: hidden;
   background: #f2f2f2;
-  transition: inset 760ms var(--ease);
+  transition: inset 1400ms var(--ease);
 }
 .slide {
   position: absolute;
@@ -62,7 +62,7 @@ button, a[href] { cursor: pointer; }
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transition: opacity 550ms ease;
+  transition: opacity 1200ms ease;
 }
 .slide.is-current { opacity: 1; z-index: 1; }
 .image-field::after {
@@ -110,10 +110,10 @@ button, a[href] { cursor: pointer; }
 }
 .given-name span, .family-name span, .cv-button span { display: inline-block; }
 [data-starting] .given-name span, [data-starting] .family-name span, [data-starting] .cv-button span {
-  animation: reveal-heading 720ms var(--ease) both;
+  animation: reveal-heading 1200ms var(--ease) both;
 }
-[data-starting] .family-name span { animation-delay: 140ms; }
-[data-starting] .cv-button span { animation-delay: 280ms; }
+[data-starting] .family-name span { animation-delay: 350ms; }
+[data-starting] .cv-button span { animation-delay: 700ms; }
 @keyframes reveal-heading {
   from { opacity: 0; transform: translateX(var(--shift)); }
   to { opacity: 1; transform: translateX(0); }
@@ -149,11 +149,6 @@ button, a[href] { cursor: pointer; }
   transition: opacity 180ms ease;
 }
 .carousel-controls button:hover { opacity: .55; }
-#playback { margin-inline-start: .2em; }
-#playback svg { width: max(14px, .6em); height: auto; }
-#playback .play-icon, #playback[data-paused] .pause-icon { display: none; }
-#playback[data-paused] .play-icon { display: block; }
-[data-view="detail"] #playback { display: none; }
 
 .menu, .project-info {
   top: var(--nav-y);
@@ -215,8 +210,6 @@ button, a[href] { cursor: pointer; }
 }
 [data-view="projects"][data-direct] .projects { transform: translateX(calc((var(--gutter) - var(--second)) / .18333333)); }
 [data-view="projects"][data-direct] .formats { opacity: 0; }
-[data-view="home"] .back-link { display: none; }
-.back-link { margin-top: .65em; font-size: .84em; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 dialog { max-width: min(90vw, 480px); padding: 1.5rem; border: 1px solid currentColor; color: inherit; }
 dialog::backdrop { background: rgb(0 0 0 / .24); }
@@ -269,3 +262,8 @@ dialog button { margin-top: 1.2em; text-decoration: underline; }
 
 .name { position: absolute; inset: 0; pointer-events: none; }
 .slide.is-outgoing { opacity: 1; }
+
+.menu.is-entering, .project-info.is-entering { transition-delay: 1s; }
+@media (prefers-reduced-motion: reduce) { .is-entering { transition-delay: 0s !important; } }
+
+.intro { white-space: pre-line; }
