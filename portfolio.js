@@ -4,6 +4,7 @@ const page = document.querySelector('#portfolio');
 const field = document.querySelector('.image-field');
 const caption = document.querySelector('#caption-link');
 const controls = document.querySelector('.carousel-controls');
+const carouselArrows = controls.querySelectorAll('button');
 const status = document.querySelector('#slide-status');
 const categoryNav = document.querySelector('#categories');
 const formatNav = document.querySelector('#formats');
@@ -167,7 +168,9 @@ function render(next, moveFocus = false) {
   name.inert = detail;
   cv.inert = detail;
   intro.inert = detail;
-  if (!detail) intro.textContent = view === 'projects' && category === 'advertising' ? advertisingIntro : homeIntro;
+  const advertisingList = view === 'projects' && category === 'advertising';
+  page.toggleAttribute('data-advertising-list', advertisingList);
+  if (!detail) intro.textContent = advertisingList ? advertisingIntro : homeIntro;
   caption.inert = detail;
 
   if (detail) {
@@ -178,7 +181,7 @@ function render(next, moveFocus = false) {
   const set = visibleSlides();
   const selected = set.includes(currentSlide) ? currentSlide : set[0];
   showSlide(selected);
-  controls.hidden = set.length < 2;
+  for (const arrow of carouselArrows) arrow.disabled = set.length < 2;
   schedule();
 
   if (moveFocus && (active?.closest('[inert]') || active === document.body)) {
