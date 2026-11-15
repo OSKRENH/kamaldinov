@@ -180,7 +180,11 @@ function render(next, moveFocus = false) {
   }
 
   const set = visibleSlides();
-  const selected = set.includes(currentSlide) ? currentSlide : set[0];
+  // Prepare the intro's final cover underneath the grey reel in advance.
+  // When the reel fades at 3s, the very same cover is already in the gallery.
+  const introFinal = view === 'home' && page.hasAttribute('data-opening')
+    ? set.filter((slide) => slide.project.cover).at(-1) : null;
+  const selected = set.includes(currentSlide) ? currentSlide : (introFinal || set[0]);
   showSlide(selected);
   refreshCoverContrast();
   for (const arrow of carouselArrows) arrow.disabled = set.length < 2;
@@ -217,6 +221,16 @@ function renderIntro(copy) {
 
 function visibleSlides() {
   return route?.view === 'detail' ? slides.filter((slide) => slide.project === route.project) : slides;
+}
+
+// Shuffle without repeats: autoplay and arrow navigation follow a new random
+// sequence on each page load, shared by the opening reel and main gallery.
+function shuffleSlides(items) {
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
 }
 
 function showSlide(slide, announce = false) {
@@ -356,7 +370,7 @@ function install(data) {
     const id = count === 1 ? base : base + '~' + count;
     return { ...project, id, href: path(project.category, project.subcategory, id) };
   });
-  slides = projects.map((project) => {
+  slides = shuffleSlides(projects.map((project) => {
     const alt = project.title;
     if (!project.cover) return { element: colorSlide(project), project, alt };
     const element = document.createElement('div');
@@ -367,7 +381,7 @@ function install(data) {
     preview.decoding = 'async';
     element.append(preview);
     return { element, preview, project, alt };
-  });
+  }));
   for (const [key, section] of Object.entries(categories)) {
     const anchor = link(section.label, path(key));
     if (section.filters.length) {
