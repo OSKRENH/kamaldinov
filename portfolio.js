@@ -1,7 +1,7 @@
 import { categories, normalize } from './admin/model.js';
 import { bookFor, brandbookGallery } from './brandbooks.js?v=1';
 import { updateCoverContrast } from './cover-contrast.js?v=1';
-import { createOpening } from './opening.js?v=3';
+import { createOpening } from './opening.js?v=4';
 
 const page = document.querySelector('#portfolio');
 const field = document.querySelector('.image-field');
@@ -9,6 +9,8 @@ const progressFill = field.querySelector('.gallery-progress-fill');
 const caption = document.querySelector('#caption-link');
 const controls = document.querySelector('.carousel-controls');
 const carouselArrows = controls.querySelectorAll('button');
+const counterWindow = controls.querySelector('.counter-window');
+const counterTotal = controls.querySelector('.counter-total');
 const captionBox = document.querySelector('.caption');
 const mobileCover = matchMedia('(max-aspect-ratio: 1/1)');
 const status = document.querySelector('#slide-status');
@@ -28,7 +30,12 @@ const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const books = brandbookGallery(motion);
 const opening = createOpening({
   page, field, motion, selectSlide: showSlide,
-  onProgress: animateProgress,
+  onLanding: (finalSlide) => {
+    // Make the intro's last frame slide 01, not 15, for the gallery's counter.
+    const pivot = slides.indexOf(finalSlide);
+    if (pivot > 0) slides = [...slides.slice(pivot), ...slides.slice(0, pivot)];
+    updateSlideCounter(finalSlide, 1, true);
+  },
   onFinish: () => { refreshCoverContrast(); schedule(); },
 });
 const sourceLink = document.querySelector('#project-source');
@@ -43,6 +50,10 @@ let projectListKey = null;
 let route;
 let timer;
 let progressAnimation = null;
+let slideAnimations = [];
+let counterAnimations = [];
+let counterGeneration = 0;
+let counterValue = null;
 let paused = motion.matches;
 let carouselFocused = false;
 let projectHovered = false;
@@ -236,15 +247,69 @@ function shuffleSlides(items) {
   return items;
 }
 
-function showSlide(slide, announce = false) {
+// The same index is used for autoplay, manual navigation, and the opening reel.
+// The number rolls vertically like a tiny odometer when the cover changes.
+function updateSlideCounter(slide, direction = 1, immediate = false) {
+  if (!counterWindow || !counterTotal || !slide) return;
+  const set = visibleSlides();
+  const index = Math.max(0, set.indexOf(slide));
+  const next = String(index + 1).padStart(2, '0');
+  counterTotal.textContent = String(set.length).padStart(2, '0');
+  if (next === counterValue) return;
+
+  const token = ++counterGeneration;
+  const previous = counterWindow.lastElementChild;
+  counterAnimations.forEach((animation) => animation.cancel());
+  counterAnimations = [];
+  const newNumber = document.createElement('span');
+  newNumber.className = 'counter-number';
+  newNumber.textContent = next;
+  counterValue = next;
+
+  if (immediate || motion.matches || page.hasAttribute('data-opening') || !previous) {
+    counterWindow.replaceChildren(newNumber);
+    return;
+  }
+
+  const sign = direction < 0 ? -1 : 1;
+  counterWindow.replaceChildren(previous, newNumber);
+  const timing = { duration: 450, easing: 'cubic-bezier(.2, .85, .22, 1)', fill: 'both' };
+  const outgoing = previous.animate([
+    { transform: 'translateY(0)', opacity: 1 },
+    { transform: `translateY(${-100 * sign}%)`, opacity: .12 },
+  ], timing);
+  const incoming = newNumber.animate([
+    { transform: `translateY(${100 * sign}%)`, opacity: .12 },
+    { transform: 'translateY(0)', opacity: 1 },
+  ], timing);
+  counterAnimations = [outgoing, incoming];
+  incoming.finished.then(() => {
+    if (token !== counterGeneration) return;
+    counterAnimations.forEach((animation) => animation.cancel());
+    counterAnimations = [];
+    counterWindow.replaceChildren(newNumber);
+  }).catch(() => {});
+}
+
+function cancelSlideMotion() {
+  slideAnimations.forEach((animation) => animation.cancel());
+  slideAnimations = [];
+}
+
+// Editorial motion: the new poster uncovers from the chosen direction while
+// the outgoing artwork gently recedes. The grey gallery background never moves.
+function showSlide(slide, announce = false, direction = 1) {
   if (slide && slide === currentSlide) return;
   currentSlide = slide || null;
   const request = ++slideRequest;
+
   if (!slide) {
-    for (const image of field.querySelectorAll('.slide')) {
-      image.classList.remove('is-current', 'is-outgoing');
-      image.setAttribute('aria-hidden', 'true');
+    cancelSlideMotion();
+    for (const item of field.querySelectorAll('.slide')) {
+      item.classList.remove('is-current', 'is-outgoing');
+      item.setAttribute('aria-hidden', 'true');
     }
+    currentElement = null;
     caption.removeAttribute('href');
     caption.hidden = true;
     refreshCoverContrast();
@@ -262,35 +327,60 @@ function showSlide(slide, announce = false) {
   const element = slide.element;
   const commit = () => {
     if (request !== slideRequest) return;
-    for (const previous of field.querySelectorAll('.slide')) {
-      previous.classList.remove('is-current', 'is-outgoing');
-      previous.setAttribute('aria-hidden', 'true');
+
+    cancelSlideMotion();
+    const previous = currentElement !== element && currentElement?.isConnected ? currentElement : null;
+    const animate = Boolean(previous && !motion.matches && !page.hasAttribute('data-opening')
+      && route?.view !== 'detail');
+
+    for (const item of field.querySelectorAll('.slide')) {
+      item.classList.remove('is-current', 'is-outgoing');
+      item.setAttribute('aria-hidden', 'true');
     }
-    const outgoing = currentElement !== element && currentElement?.isConnected ? currentElement : null;
-    outgoing?.classList.add('is-outgoing');
+
     if (slide.preview) {
       element.dataset.orientation = slide.preview.naturalWidth > slide.preview.naturalHeight ? 'wide' : 'portrait';
     }
-    const fresh = !element.isConnected;
-    if (fresh) {
-      field.append(element);
-      element.getBoundingClientRect();
-    }
-    if (slide.preview) element.removeAttribute('aria-hidden');
+    if (!element.isConnected) field.append(element);
+    element.removeAttribute('aria-hidden');
+    if (animate) previous.classList.add('is-outgoing');
     element.classList.add('is-current');
     currentElement = element;
+    updateSlideCounter(slide, direction, !animate);
     refreshCoverContrast();
-    if (outgoing) {
-      const clearOutgoing = () => {
-        if (request === slideRequest) outgoing.classList.remove('is-outgoing');
-      };
-      if (motion.matches) clearOutgoing();
-      else {
-        element.addEventListener('transitionend', clearOutgoing, { once: true });
-        setTimeout(clearOutgoing, 1300);
-      }
-    }
+
+    if (!animate) return;
+
+    const duration = 820;
+    const ease = 'cubic-bezier(.2, .82, .2, 1)';
+    const clipFrom = direction < 0 ? 'inset(0 100% 0 0)' : 'inset(0 0 0 100%)';
+    const curtain = element.animate([
+      { clipPath: clipFrom },
+      { clipPath: 'inset(0 0 0 0)' },
+    ], { duration, easing: ease, fill: 'both' });
+    slideAnimations.push(curtain);
+
+    const arrivingImage = element.querySelector('img');
+    if (arrivingImage) slideAnimations.push(arrivingImage.animate([
+      { transform: 'scale(1.055)', opacity: .72 },
+      { transform: 'scale(1)', opacity: 1 },
+    ], { duration: duration + 70, easing: ease, fill: 'both' }));
+
+    const departingImage = previous.querySelector('img');
+    if (departingImage) slideAnimations.push(departingImage.animate([
+      { transform: 'translateX(0) scale(1)', opacity: 1 },
+      { transform: `translateX(${direction < 0 ? '2%' : '-2%'}) scale(.975)`, opacity: .78 },
+    ], { duration, easing: ease, fill: 'both' }));
+
+    curtain.finished.then(() => {
+      if (request !== slideRequest) return;
+      // Release the temporary animation styles and keep only the new slide.
+      previous.classList.remove('is-outgoing');
+      cancelSlideMotion();
+      refreshCoverContrast();
+    }).catch(() => {});
   };
+
   const preview = slide.preview;
   if (preview && !preview.hasAttribute('src')) preview.src = project.cover;
   if (!preview || (preview.complete && preview.naturalWidth)) commit();
@@ -299,7 +389,7 @@ function showSlide(slide, announce = false) {
     slide.element = colorSlide(project);
     slide.preview = null;
     currentSlide = null;
-    showSlide(slide);
+    showSlide(slide, announce, direction);
   });
 }
 
@@ -325,7 +415,7 @@ function step(direction, announce = true) {
   const set = visibleSlides();
   if (set.length < 2) return;
   const index = set.indexOf(currentSlide);
-  showSlide(set[(index + direction + set.length) % set.length], announce);
+  showSlide(set[(index + direction + set.length) % set.length], announce, direction);
   schedule();
 }
 
@@ -349,7 +439,10 @@ function stopProgress() {
 function schedule() {
   clearTimeout(timer);
   // The intro has its own 200ms slide clock and must not be interrupted.
-  if (page.hasAttribute('data-opening')) return;
+  if (page.hasAttribute('data-opening')) {
+    stopProgress();
+    return;
+  }
 
   stopProgress();
   if (!paused && !carouselFocused && !projectHovered && !(route?.view === 'projects' && projectNav.contains(document.activeElement) && document.activeElement.matches(':focus-visible')) && !document.hidden && !cvDialog.open && route?.view !== 'detail' && slides.length > 1) {
