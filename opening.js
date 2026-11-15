@@ -43,65 +43,43 @@ export function createOpening({ page, field, motion, selectSlide, onLanding, onF
     }
 
     const posters = covers.map((slide) => {
-      // A grouped slide must also be a single frame in the opening reel,
-      // with the exact same three-layer layout as the settled carousel.
-      const sources = slide.collageCovers || [slide.project.cover];
-      const images = sources.map((source, index) => {
-        const image = new Image();
-        image.alt = '';
-        image.draggable = false;
-        image.decoding = 'async';
-        image.loading = 'eager';
-        image.src = source;
-        if (slide.collageCovers) {
-          image.className = 'infographic-sheet infographic-sheet--'
-            + ['ai', 'membership', 'ecosystem'][index];
-        } else {
-          image.className = 'opening-reel-image';
-        }
-        return image;
-      });
-      const element = slide.collageCovers ? document.createElement('div') : images[0];
-      if (slide.collageCovers) {
-        element.className = 'opening-reel-image infographic-stack';
-        element.style.setProperty('--preview',
-          'url(' + JSON.stringify(slide.project.cover) + ')');
-        element.append(...images);
-      }
-      return { element, images, slide };
+      const image = new Image();
+      image.className = 'opening-reel-image';
+      image.alt = '';
+      image.draggable = false;
+      image.decoding = 'async';
+      image.loading = 'eager';
+      image.src = slide.project.cover;
+      if (slide.element.dataset.feature === 'ai') image.dataset.feature = 'ai';
+      return { image, slide };
     });
 
-    // Decode all artwork, including the three infographic sheets, before
-    // starting the three-second sequence. One collage counts as one frame.
-    await Promise.all(posters.flatMap(({ images }) => images.map(async (image) => {
-      try {
-        await image.decode();
-      } catch {
-        // Ignore unavailable artwork rather than locking up the homepage.
-      }
+    // Decode each frame before the 3-second reel to avoid skipped covers.
+    await Promise.all(posters.map(async ({ image }) => {
+      try { await image.decode(); } catch { /* A missing cover must not block the site. */ }
       if (image.naturalWidth) {
         const ratio = image.naturalHeight / image.naturalWidth;
         image.dataset.orientation = ratio >= 1.8 ? 'infographic'
           : ratio < 1 ? 'wide' : 'portrait';
       }
-    })));
+    }));
     if (finished || generation !== token) return;
 
-    const ready = posters.filter(({ images }) => images.every((image) => image.naturalWidth > 0));
+    const ready = posters.filter(({ image }) => image.naturalWidth > 0);
     if (!ready.length) {
       finish();
       return;
     }
 
     const interval = INTRO_MS / ready.length;
-    ready[0].element.classList.add('is-active');
-    reel.replaceChildren(...ready.map(({ element }) => element));
+    ready[0].image.classList.add('is-active');
+    reel.replaceChildren(...ready.map(({ image }) => image));
     let current = 0;
 
     function show(index) {
       if (current === index) return;
-      ready[current].element.classList.remove('is-active');
-      ready[index].element.classList.add('is-active');
+      ready[current].image.classList.remove('is-active');
+      ready[index].image.classList.add('is-active');
       current = index;
     }
 
