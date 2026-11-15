@@ -1,24 +1,33 @@
-// The entire homepage UI enters together as the grey cover wall contracts.
-// The cover reel and field movement share one three-second timeline.
+// Editorial entrance and shuffled cover reel share a single three-second timeline.
 const INTRO_MS = 3000;
 const CROSSFADE_MS = 300;
+
+// The five content groups appear consecutively, but all finish within the
+// same three seconds as the grey cover field's full-screen contraction.
+const REVEALS = [
+  ['opening-show-given', 0],
+  ['opening-show-family', 420],
+  ['opening-show-cv', 870],
+  ['opening-show-description', 1430],
+  ['opening-show-navigation', 2050],
+];
 
 export function createOpening({ page, field, motion, selectSlide, onFinish }) {
   const reel = field.querySelector('.opening-reel');
   let generation = 0;
   let frame = 0;
-  let finished = false;
   let completionTimer = 0;
+  let finished = false;
 
   function finish() {
     if (finished) return;
     finished = true;
-    ++generation;
+    generation++;
     cancelAnimationFrame(frame);
     clearTimeout(completionTimer);
     reel?.remove();
     page.removeAttribute('data-opening');
-    page.classList.remove('opening-ui-visible', 'opening-gallery-visible');
+    page.classList.remove(...REVEALS.map(([name]) => name), 'opening-gallery-visible');
     onFinish();
   }
 
@@ -27,80 +36,76 @@ export function createOpening({ page, field, motion, selectSlide, onFinish }) {
       finish();
       return;
     }
-
     const token = ++generation;
-    const covers = slides.filter((slide) => slide.project.cover);
+    // Slides were shuffled once on page load and are also used by the main
+    // carousel. Thus the intro's final frame is exactly its first gallery view.
+    const covers = slides.filter(({ project }) => project.cover);
     if (!covers.length) {
       finish();
       return;
     }
 
-    // Keep the cover already painted by HTML, preventing a blank first frame.
-    const initial = reel.querySelector('.opening-reel-image');
     const posters = covers.map((slide, index) => {
-      const img = index === 0 && initial ? initial : new Image();
-      img.className = 'opening-reel-image' + (index === 0 ? ' is-active' : '');
-      img.alt = '';
-      img.draggable = false;
-      img.decoding = 'async';
-      img.loading = 'eager';
-      if (index !== 0) img.src = slide.project.cover;
-      const setOrientation = () => {
-        img.dataset.orientation = img.naturalWidth > img.naturalHeight ? 'wide' : 'portrait';
+      const image = new Image();
+      image.className = 'opening-reel-image' + (index === 0 ? ' is-active' : '');
+      image.alt = '';
+      image.draggable = false;
+      image.decoding = 'async';
+      image.loading = 'eager';
+      image.src = slide.project.cover;
+      const orient = () => {
+        image.dataset.orientation = image.naturalWidth > image.naturalHeight ? 'wide' : 'portrait';
       };
-      if (img.complete && img.naturalWidth) setOrientation();
-      else img.addEventListener('load', setOrientation, { once: true });
-      return { image: img, slide };
+      if (image.complete && image.naturalWidth) orient();
+      else image.addEventListener('load', orient, { once: true });
+      return { image, slide };
     });
     reel.replaceChildren(...posters.map(({ image }) => image));
 
-    let last = 0;
-    let lastValid = posters[0];
-    let stageStarted = false;
-
+    let current = 0;
+    let lastVisible = posters[0];
     function show(index) {
-      if (index === last) return;
-      const target = posters[index];
-      // A slow image response must never blank the reel.
-      if (!target.image.complete || !target.image.naturalWidth) return;
-      posters[last].image.classList.remove('is-active');
-      target.image.classList.add('is-active');
-      last = index;
-      lastValid = target;
+      if (index === current) return;
+      const poster = posters[index];
+      // Never replace a loaded cover with an empty/loading image.
+      if (!poster.image.complete || !poster.image.naturalWidth) return;
+      posters[current].image.classList.remove('is-active');
+      poster.image.classList.add('is-active');
+      current = index;
+      lastVisible = poster;
     }
 
-    // Two animation frames ensure browsers register the full-screen starting
-    // geometry before interpolating inset to the *normal* gallery geometry.
+    // Preserve the full-screen first paint so CSS can interpolate its inset.
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (finished || generation !== token) return;
-      page.classList.add('opening-ui-visible');
+      if (finished || token !== generation) return;
       page.dataset.opening = 'shrinking';
-      stageStarted = true;
-      const started = performance.now();
+      const start = performance.now();
+
       const tick = (now) => {
-        if (finished || generation !== token) return;
-        const elapsed = Math.min(INTRO_MS, now - started);
+        if (finished || token !== generation) return;
+        const elapsed = Math.min(INTRO_MS, now - start);
+        for (const [className, at] of REVEALS) {
+          if (elapsed >= at) page.classList.add(className);
+        }
         const index = Math.min(posters.length - 1, Math.floor(elapsed / INTRO_MS * posters.length));
         show(index);
+
         if (elapsed < INTRO_MS) {
           frame = requestAnimationFrame(tick);
           return;
         }
 
-        // The gallery has reached its final size; reveal its controls only now.
-        selectSlide(lastValid.slide);
+        // The last frame is selected behind the reel before fading the reel
+        // itself. The gallery cover was already preselected and preloaded.
+        selectSlide(lastVisible.slide);
         page.dataset.opening = 'settled';
         page.classList.add('opening-gallery-visible');
         completionTimer = setTimeout(() => {
-          if (!finished && generation === token) finish();
-        }, CROSSFADE_MS + 30);
+          if (!finished && token === generation) finish();
+        }, CROSSFADE_MS + 40);
       };
       frame = requestAnimationFrame(tick);
     }));
-
-    return () => {
-      if (!stageStarted) finish();
-    };
   }
 
   return { play, cancel: finish };
