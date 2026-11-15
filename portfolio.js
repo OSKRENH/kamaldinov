@@ -1,6 +1,5 @@
 import { categories, normalize } from './admin/model.js';
 import { bookFor, brandbookGallery } from './brandbooks.js?v=1';
-import { updateCoverContrast } from './cover-contrast.js?v=1';
 import { createOpening } from './opening.js?v=4';
 
 const page = document.querySelector('#portfolio');
@@ -11,8 +10,6 @@ const controls = document.querySelector('.carousel-controls');
 const carouselArrows = controls.querySelectorAll('button');
 const counterWindow = controls.querySelector('.counter-window');
 const counterTotal = controls.querySelector('.counter-total');
-const captionBox = document.querySelector('.caption');
-const mobileCover = matchMedia('(max-aspect-ratio: 1/1)');
 const status = document.querySelector('#slide-status');
 const categoryNav = document.querySelector('#categories');
 const formatNav = document.querySelector('#formats');
@@ -36,7 +33,7 @@ const opening = createOpening({
     if (pivot > 0) slides = [...slides.slice(pivot), ...slides.slice(0, pivot)];
     updateSlideCounter(finalSlide, 1, true);
   },
-  onFinish: () => { refreshCoverContrast(); schedule(); },
+  onFinish: schedule,
 });
 const sourceLink = document.querySelector('#project-source');
 
@@ -200,7 +197,6 @@ function render(next, moveFocus = false) {
     ? set.filter((slide) => slide.project.cover).at(-1) : null;
   const selected = set.includes(currentSlide) ? currentSlide : (introFinal || set[0]);
   showSlide(selected);
-  refreshCoverContrast();
   for (const arrow of carouselArrows) arrow.disabled = set.length < 2;
   schedule();
 
@@ -312,7 +308,6 @@ function showSlide(slide, announce = false, direction = 1) {
     currentElement = null;
     caption.removeAttribute('href');
     caption.hidden = true;
-    refreshCoverContrast();
     return;
   }
 
@@ -347,7 +342,6 @@ function showSlide(slide, announce = false, direction = 1) {
     element.classList.add('is-current');
     currentElement = element;
     updateSlideCounter(slide, direction, !animate);
-    refreshCoverContrast();
 
     if (!animate) return;
 
@@ -377,7 +371,6 @@ function showSlide(slide, announce = false, direction = 1) {
       // Release the temporary animation styles and keep only the new slide.
       previous.classList.remove('is-outgoing');
       cancelSlideMotion();
-      refreshCoverContrast();
     }).catch(() => {});
   };
 
@@ -393,17 +386,6 @@ function showSlide(slide, announce = false, direction = 1) {
   });
 }
 
-let contrastFrame;
-function refreshCoverContrast() {
-  cancelAnimationFrame(contrastFrame);
-  if (!mobileCover.matches || route?.view === 'detail') return;
-  contrastFrame = requestAnimationFrame(() => updateCoverContrast(currentElement, [captionBox, controls]));
-}
-window.addEventListener('resize', refreshCoverContrast);
-mobileCover.addEventListener('change', refreshCoverContrast);
-field.addEventListener('transitionend', (event) => {
-  if (event.target === field) refreshCoverContrast();
-});
 document.addEventListener('pointerdown', (event) => {
   document.documentElement.dataset.input = event.pointerType;
 }, true);
