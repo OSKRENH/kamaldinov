@@ -9,7 +9,7 @@ const REVEALS = [
   ['opening-show-navigation', 2050],
 ];
 
-export function createOpening({ page, field, motion, selectSlide, onProgress, onFinish }) {
+export function createOpening({ page, field, motion, selectSlide, onLanding, onFinish }) {
   const reel = field.querySelector('.opening-reel');
   let generation = 0;
   let frame = 0;
@@ -84,7 +84,6 @@ export function createOpening({ page, field, motion, selectSlide, onProgress, on
       ready[current].image.classList.remove('is-active');
       ready[index].image.classList.add('is-active');
       current = index;
-      onProgress(interval);
     }
 
     // Ensure the fullscreen initial geometry is painted before shrinking.
@@ -93,7 +92,6 @@ export function createOpening({ page, field, motion, selectSlide, onProgress, on
 
       page.dataset.opening = 'shrinking';
       const start = performance.now();
-      onProgress(interval);
 
       function tick(now) {
         if (finished || generation !== token) return;
@@ -113,6 +111,7 @@ export function createOpening({ page, field, motion, selectSlide, onProgress, on
 
         // The last visible frame becomes the first normal gallery cover.
         selectSlide(ready[current].slide);
+        onLanding(ready[current].slide);
         page.dataset.opening = 'settled';
         page.classList.add('opening-gallery-visible');
         completionTimer = setTimeout(() => {
