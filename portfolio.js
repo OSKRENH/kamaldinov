@@ -1,6 +1,6 @@
 import { categories, normalize } from './admin/model.js';
 import { bookFor, brandbookGallery } from './brandbooks.js?v=1';
-import { createOpening } from './opening.js?v=4';
+import { createOpening } from './opening.js?v=5';
 import { matchGalleryInk } from './gallery-ink.js?v=1';
 
 const page = document.querySelector('#portfolio');
