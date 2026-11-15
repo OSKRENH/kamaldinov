@@ -101,7 +101,7 @@ function link(label, href, current = false) {
 function renderMenus(next) {
   const { view, category, format } = next;
   for (const anchor of categoryNav.querySelectorAll('a')) {
-    const active = view === 'formats' && anchor.dataset.route === path(category);
+    const active = (view === 'formats' || (view === 'projects' && !format)) && anchor.dataset.route === path(category);
     if (active) anchor.setAttribute('aria-current', 'true');
     else anchor.removeAttribute('aria-current');
     if (anchor.hasAttribute('aria-expanded')) anchor.setAttribute('aria-expanded', active);
@@ -156,9 +156,10 @@ function render(next, moveFocus = false) {
   route = next;
   projectHovered = false;
   page.dataset.view = view;
-  page.toggleAttribute('data-direct', view === 'projects' && !categories[category].filters.length);
-  categoryNav.inert = view === 'projects' || detail;
-  formatNav.inert = view !== 'formats' && !(view === 'projects' && !page.hasAttribute('data-direct'));
+  const directProjects = view === 'projects' && !categories[category].filters.length;
+  page.toggleAttribute('data-direct', directProjects);
+  categoryNav.inert = detail || (view === 'projects' && !directProjects);
+  formatNav.inert = view !== 'formats' && !(view === 'projects' && !directProjects);
   projectNav.inert = view !== 'projects';
   projectInfo.inert = !detail;
   projectTitle.inert = !detail;
