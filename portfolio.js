@@ -1,6 +1,7 @@
 import { categories, normalize } from './admin/model.js';
 import { bookFor, brandbookGallery } from './brandbooks.js?v=1';
 import { createOpening } from './opening.js?v=4';
+import { matchGalleryInk } from './gallery-ink.js?v=1';
 
 const page = document.querySelector('#portfolio');
 const field = document.querySelector('.image-field');
@@ -334,13 +335,16 @@ function showSlide(slide, announce = false, direction = 1) {
     }
 
     if (slide.preview) {
-      element.dataset.orientation = slide.preview.naturalWidth > slide.preview.naturalHeight ? 'wide' : 'portrait';
+      const ratio = slide.preview.naturalHeight / slide.preview.naturalWidth;
+      element.dataset.orientation = ratio >= 1.8 ? 'infographic'
+        : ratio < 1 ? 'wide' : 'portrait';
     }
     if (!element.isConnected) field.append(element);
     element.removeAttribute('aria-hidden');
     if (animate) previous.classList.add('is-outgoing');
     element.classList.add('is-current');
     currentElement = element;
+    matchGalleryInk(page, slide);
     updateSlideCounter(slide, direction, !animate);
 
     if (!animate) return;
