@@ -99,7 +99,7 @@
   .portfolio:not([data-view="detail"]) .project-cover[data-orientation="infographic"] img,
   .portfolio:not([data-view="detail"]) .opening-reel-image[data-orientation="infographic"] {
     position: absolute;
-    top: 13%;
+    top: var(--media-inset, clamp(16px, 2.604167vw, 100px));
     left: 33.3333%;
     width: 33.3333%;
     height: auto;
@@ -108,5 +108,87 @@
     padding: 0;
     object-fit: contain;
     object-position: center top;
+  }
+}
+
+/* One gallery frame, three real infographic covers.
+   AI → Membership → Ecosystem in a left-to-right cascading overlap.
+   The first cover starts exactly at the usual artwork top inset. */
+.infographic-stack {
+  --media-inset: clamp(16px, 2.604167vw, 100px);
+}
+.portfolio .project-cover.infographic-stack > .infographic-sheet,
+.portfolio .opening-reel-image.infographic-stack > .infographic-sheet {
+  position: absolute;
+  inset: auto;
+  top: var(--sheet-y);
+  left: var(--sheet-x);
+  z-index: var(--sheet-layer);
+  display: block;
+  width: 36%;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  object-fit: contain;
+  object-position: center top;
+  opacity: 1;
+  transform: none;
+}
+.infographic-stack > .infographic-sheet--ai {
+  --sheet-x: 8%;
+  --sheet-y: var(--media-inset);
+  --sheet-layer: 1;
+}
+.infographic-stack > .infographic-sheet--membership {
+  --sheet-x: 35%;
+  --sheet-y: calc(var(--media-inset) + clamp(12px, 2.2vw, 70px));
+  --sheet-layer: 2;
+}
+.infographic-stack > .infographic-sheet--ecosystem {
+  --sheet-x: 62%;
+  --sheet-y: calc(var(--media-inset) + clamp(24px, 4.4vw, 140px));
+  --sheet-layer: 3;
+}
+/* The reel uses the exact composition as the final gallery slide,
+   preserving visual continuity when the grey window contracts. */
+.portfolio .opening-reel-image.infographic-stack {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.portfolio .opening-reel-image.infographic-stack::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  inset: -32px;
+  background: var(--preview) center / cover no-repeat;
+  filter: blur(32px) brightness(.88) saturate(.83);
+  transform: scale(1.04);
+}
+@media (max-aspect-ratio: 1/1) {
+  .infographic-stack { --media-inset: clamp(12px, 3.5vw, 22px); }
+  .portfolio .project-cover.infographic-stack > .infographic-sheet,
+  .portfolio .opening-reel-image.infographic-stack > .infographic-sheet {
+    width: 54%;
+    height: auto;
+  }
+  .infographic-stack > .infographic-sheet--ai {
+    --sheet-x: 2%;
+    --sheet-y: var(--media-inset);
+  }
+  .infographic-stack > .infographic-sheet--membership {
+    --sheet-x: 23%;
+    --sheet-y: calc(var(--media-inset) + 7%);
+  }
+  .infographic-stack > .infographic-sheet--ecosystem {
+    --sheet-x: 44%;
+    --sheet-y: calc(var(--media-inset) + 14%);
+  }
+  .portfolio .opening-reel-image.infographic-stack::before {
+    inset: -24px;
+    filter: blur(20px) brightness(.92) saturate(.75);
   }
 }
