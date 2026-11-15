@@ -28,7 +28,7 @@ function add(project = {}, open = false) {
   renderFilters(project.subcategory);
   category.addEventListener('change', () => renderFilters());
 
-  for (const name of ['title', 'description', 'cover', 'url']) {
+  for (const name of ['title', 'client', 'description', 'cover', 'url']) {
     article.querySelector(`[name=${name}]`).value = project[name] || '';
   }
   const setTitle = () => { summary.textContent = title.value.trim() || 'Новый проект'; };
