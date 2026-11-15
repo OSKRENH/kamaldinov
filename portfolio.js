@@ -488,11 +488,23 @@ function install(data) {
     if (project.title === 'Artificial Intelligence, Big Data, Machine Learning, and Deep Learning') {
       element.dataset.feature = 'ai';
     }
+    const isPopolam = project.title === 'Пополам' && project.category === 'pets';
+    if (isPopolam) element.dataset.feature = 'popolam';
     element.style.setProperty('--preview', 'url(' + JSON.stringify(project.cover) + ')');
     const preview = new Image();
     preview.alt = alt;
     preview.decoding = 'async';
-    element.append(preview);
+    if (isPopolam) {
+      const picture = document.createElement('picture');
+      picture.className = 'popolam-picture';
+      const mobile = document.createElement('source');
+      mobile.media = '(max-aspect-ratio: 1/1)';
+      mobile.srcset = project.cover.replace(/\.webp$/, '-mobile.webp');
+      picture.append(mobile, preview);
+      element.append(picture);
+    } else {
+      element.append(preview);
+    }
     return { element, preview, project, alt };
   });
   // The landing reel and main gallery have one AI infographic cover.
