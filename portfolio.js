@@ -1,7 +1,7 @@
 import { categories, normalize } from './admin/model.js';
 import { bookFor, brandbookGallery } from './brandbooks.js?v=1';
 import { updateCoverContrast } from './cover-contrast.js?v=1';
-import { isBillboardProject, billboardGallery } from './billboards.js?v=1';
+import { createOpening } from './opening.js?v=1';
 
 const page = document.querySelector('#portfolio');
 const field = document.querySelector('.image-field');
@@ -25,7 +25,10 @@ const cvDialog = document.querySelector('#cv');
 const detailBack = document.querySelector('.detail-back');
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const books = brandbookGallery(motion);
-const billboards = billboardGallery();
+const opening = createOpening({
+  page, field, motion, selectSlide: showSlide,
+  onFinish: () => { refreshCoverContrast(); schedule(); },
+});
 const sourceLink = document.querySelector('#project-source');
 
 let projects = [];
@@ -139,6 +142,7 @@ function renderMenus(next) {
 
 let focusTimer;
 function render(next, moveFocus = false) {
+  if (next.view !== 'home' && page.hasAttribute('data-opening')) opening.cancel();
   clearTimeout(focusTimer);
   renderMenus(next);
   const { view, project, category } = next;
@@ -148,10 +152,6 @@ function render(next, moveFocus = false) {
   page.toggleAttribute('data-book', Boolean(book));
   if (book) books.open(book, project.title);
   else books.close();
-  const billboard = detail && isBillboardProject(project);
-  page.toggleAttribute('data-billboard', Boolean(billboard));
-  if (billboard) billboards.open();
-  else billboards.close();
   route = next;
   projectHovered = false;
   page.dataset.view = view;
@@ -314,7 +314,7 @@ function step(direction, announce = true) {
 
 function schedule() {
   clearTimeout(timer);
-  if (!paused && !carouselFocused && !projectHovered && !(route?.view === 'projects' && projectNav.contains(document.activeElement) && document.activeElement.matches(':focus-visible')) && !document.hidden && !cvDialog.open && route?.view !== 'detail' && slides.length > 1) {
+  if (!page.hasAttribute('data-opening') && !paused && !carouselFocused && !projectHovered && !(route?.view === 'projects' && projectNav.contains(document.activeElement) && document.activeElement.matches(':focus-visible')) && !document.hidden && !cvDialog.open && route?.view !== 'detail' && slides.length > 1) {
     timer = setTimeout(() => step(1, false), 5000);
   }
 }
@@ -376,7 +376,10 @@ function install(data) {
     }
     categoryNav.append(anchor);
   }
-  render(readRoute());
+  const initialRoute = readRoute();
+  if (initialRoute.view !== 'home' || motion.matches || !slides.some((slide) => slide.project.cover)) opening.cancel();
+  render(initialRoute);
+  if (page.hasAttribute('data-opening')) void opening.play(slides);
 }
 
 page.addEventListener('click', (event) => {
@@ -434,16 +437,13 @@ cv.addEventListener('click', () => { cvDialog.showModal(); schedule(); });
 cvDialog.addEventListener('close', schedule);
 window.addEventListener('popstate', () => render(readRoute(), true));
 document.addEventListener('visibilitychange', schedule);
-motion.addEventListener('change', () => { paused = motion.matches; schedule(); });
+motion.addEventListener('change', () => { paused = motion.matches; if (motion.matches) opening.cancel(); schedule(); });
 document.addEventListener('keydown', (event) => {
   if (cvDialog.open || books.zoom.open || !route || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
   if (event.key === 'Escape') back();
   if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
     const direction = event.key === 'ArrowLeft' ? -1 : 1;
-    if (page.hasAttribute('data-billboard')) {
-      event.preventDefault();
-      billboards.step(direction);
-    } else if (page.hasAttribute('data-book')) {
+    if (page.hasAttribute('data-book')) {
       event.preventDefault();
       books.step(direction);
     } else if (visibleSlides().length >= 2) {
