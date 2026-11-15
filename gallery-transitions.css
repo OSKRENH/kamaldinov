@@ -13,7 +13,7 @@
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
-  gap: .38em;
+  gap: 0;
   overflow: visible;
 }
 .carousel-controls .slide-counter {
@@ -34,6 +34,12 @@
   align-items: center;
   justify-content: flex-start;
   gap: .28em;
+  margin-top: -.20em;
+  font-size: 1em;
+  line-height: 1.2;
+}
+.carousel-arrows button {
+  line-height: 1.2;
 }
 .counter-window {
   display: inline-grid;
@@ -63,24 +69,44 @@
 @media (max-aspect-ratio: 1/1) {
   /* Mobile used to enlarge the entire control cluster to 1.25em.
      Keep the number at body size and enlarge only the arrows. */
-  .carousel-controls { font-size: 1em; gap: .32em; }
-  .carousel-arrows { font-size: 1.25em; }
+  .carousel-controls { font-size: 1em; gap: 0; }
+  .carousel-arrows { font-size: 1em; }
 }
 
-/* True per-pixel inversion, composited by the browser against the current
-   cover (or the white page). No image sampling or JS color switching. */
+/* Complementary difference blending produced cyan/orange lettering on
+   saturated covers. Ink is now strictly neutral black or white, selected
+   once per image and shared with the 1px progress line. */
 .portfolio:not([data-view="detail"]) .caption,
 .portfolio:not([data-view="detail"]) .carousel-controls {
-  color: #fff;
-  mix-blend-mode: difference;
+  color: var(--gallery-ink, #111);
+  mix-blend-mode: normal;
+  transition: color 240ms ease, opacity var(--fade), transform var(--move);
 }
-/* An alpha-dimmed digit would partially blend back into the image. */
 .portfolio:not([data-view="detail"]) .counter-divider,
 .portfolio:not([data-view="detail"]) .counter-total {
   opacity: 1;
 }
 @media (hover: hover) {
   .portfolio:not([data-view="detail"]) .caption-link[href]:hover {
-    color: #fff;
+    color: inherit;
+  }
+}
+
+/* Infographics are actual 834x1750 long-form pieces (not book covers).
+   On desktop give them one third of the grey field's width and let the
+   image bleed below the visible bottom edge. */
+@media (min-aspect-ratio: 1/1) {
+  .portfolio:not([data-view="detail"]) .project-cover[data-orientation="infographic"] img,
+  .portfolio:not([data-view="detail"]) .opening-reel-image[data-orientation="infographic"] {
+    position: absolute;
+    top: 13%;
+    left: 33.3333%;
+    width: 33.3333%;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    padding: 0;
+    object-fit: contain;
+    object-position: center top;
   }
 }
