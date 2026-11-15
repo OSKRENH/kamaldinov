@@ -66,3 +66,21 @@
   .carousel-controls { font-size: 1em; gap: .32em; }
   .carousel-arrows { font-size: 1.25em; }
 }
+
+/* True per-pixel inversion, composited by the browser against the current
+   cover (or the white page). No image sampling or JS color switching. */
+.portfolio:not([data-view="detail"]) .caption,
+.portfolio:not([data-view="detail"]) .carousel-controls {
+  color: #fff;
+  mix-blend-mode: difference;
+}
+/* An alpha-dimmed digit would partially blend back into the image. */
+.portfolio:not([data-view="detail"]) .counter-divider,
+.portfolio:not([data-view="detail"]) .counter-total {
+  opacity: 1;
+}
+@media (hover: hover) {
+  .portfolio:not([data-view="detail"]) .caption-link[href]:hover {
+    color: #fff;
+  }
+}
