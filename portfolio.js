@@ -45,6 +45,7 @@ let route;
 let timer;
 let paused = motion.matches;
 let carouselFocused = false;
+let projectHovered = false;
 
 function path(category, format, project) {
   const parts = [category, format, project];
@@ -145,6 +146,7 @@ function render(next, moveFocus = false) {
   const detail = view === 'detail';
   const active = document.activeElement;
   route = next;
+  projectHovered = false;
   page.dataset.view = view;
   page.toggleAttribute('data-direct', view === 'projects' && !categories[category].filters.length);
   categoryNav.inert = view === 'projects' || detail;
@@ -257,7 +259,7 @@ function step(direction, announce = true) {
 
 function schedule() {
   clearTimeout(timer);
-  if (!paused && !carouselFocused && !document.hidden && !cvDialog.open && route?.view !== 'detail' && slides.length > 1) {
+  if (!paused && !carouselFocused && !projectHovered && !(route?.view === 'projects' && projectNav.contains(document.activeElement) && document.activeElement.matches(':focus-visible')) && !document.hidden && !cvDialog.open && route?.view !== 'detail' && slides.length > 1) {
     timer = setTimeout(() => step(1, false), 5000);
   }
 }
@@ -333,6 +335,31 @@ function updateCarouselFocus() {
   carouselFocused = active?.matches(':focus-visible') && (controls.contains(active) || caption === active);
   schedule();
 }
+function previewProject(anchor) {
+  if (route?.view !== 'projects' || !anchor) return;
+  const project = projects.find((entry) => entry.href === anchor.dataset.route);
+  if (!project) return;
+  const slide = slides.find((entry) => entry.project === project);
+  showSlide(slide);
+  schedule();
+}
+
+projectNav.addEventListener('pointerover', (event) => {
+  if (event.pointerType === 'touch' || route?.view !== 'projects') return;
+  projectHovered = true;
+  const anchor = event.target.closest('a[data-route]');
+  if (anchor && !anchor.contains(event.relatedTarget)) previewProject(anchor);
+  schedule();
+});
+projectNav.addEventListener('pointerleave', () => {
+  projectHovered = false;
+  schedule();
+});
+projectNav.addEventListener('focusin', (event) => {
+  previewProject(event.target.closest('a[data-route]'));
+});
+projectNav.addEventListener('focusout', () => queueMicrotask(schedule));
+
 page.addEventListener('focusin', updateCarouselFocus);
 page.addEventListener('focusout', () => queueMicrotask(updateCarouselFocus));
 cv.addEventListener('click', () => { cvDialog.showModal(); schedule(); });
