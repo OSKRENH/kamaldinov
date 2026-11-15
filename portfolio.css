@@ -127,6 +127,7 @@ button, a[href] { cursor: pointer; }
 }
 .intro, .project-info { width: var(--intro-width); left: var(--gutter); }
 .intro { top: var(--intro-y); }
+.intro-mobile-copy { display: none; }
 [data-advertising-list] .intro { white-space: pre-line; }
 .caption {
   top: var(--intro-y);
@@ -239,27 +240,28 @@ dialog button { margin-top: 1.2em; text-decoration: underline; }
     --second: 51.538462%;
     --header-y: max(2.843602%, env(safe-area-inset-top));
     --intro-y: max(13.507109%, calc(env(safe-area-inset-top) + 4.65em));
-    --nav-y: min(83.412322%, calc(100% - 6em - max(16px, env(safe-area-inset-bottom))));
-    --image-top: max(34.71564%, calc(var(--intro-y) + 6.8em));
-    --image-end: min(77.962085%, calc(var(--nav-y) - 1.4em));
+    --nav-y: min(88.981043%, calc(100% - 6.25em - max(16px, env(safe-area-inset-bottom))));
+    --image-top: max(24.170616%, calc(var(--intro-y) + 7.5em));
+    --image-end: min(86.492891%, calc(var(--nav-y) - 1.5em));
     --caption-y: clamp(var(--image-top), 66.706161%, calc(var(--image-end) - 3.8em));
     --column: 43.333333%;
     --projects-width: 43.333333%;
     --format-shift: -46.410257vw;
     --intro-width: 89.74359%;
-    font-size: clamp(13px, 3.846154vw, 18px);
+    font-size: clamp(11px, 3.076923vw, 16px);
+    line-height: 1.25;
   }
-  .name, .top-action { font-size: clamp(23px, 8.205128vw, 43px); }
-  .family-name {
-    top: calc(var(--header-y) + 1.125em);
-    left: var(--gutter);
-    translate: none;
-    text-align: left;
+  .name, .top-action { font-size: clamp(19px, 6.153846vw, 32px); }
+  .intro-desktop-copy { display: none; }
+  .intro-mobile-copy { display: inline; white-space: pre-line; }
+  [data-view="detail"] {
+    --nav-y: min(83.412322%, calc(100% - 6em - max(16px, env(safe-area-inset-bottom))));
+    font-size: clamp(13px, 3.846154vw, 18px);
   }
   .project-title, [data-view="detail"] .top-action { font-size: clamp(22px, 7.692308vw, 40px); }
   .project-title { right: 36%; line-height: 1.2333; }
   .intro {
-    white-space: pre-line;
+    white-space: normal;
     max-height: calc(var(--image-top) - var(--intro-y) - .7em);
     overflow: auto;
     scrollbar-width: none;
@@ -272,13 +274,20 @@ dialog button { margin-top: 1.2em; text-decoration: underline; }
   .caption {
     top: var(--caption-y);
     left: var(--gutter);
-    right: 29%;
+    right: calc(100% - var(--second) + .5em);
   }
   .carousel-controls {
     top: var(--caption-y);
+    left: var(--second);
+    right: auto;
+    font-size: 1.25em;
+    gap: .16em;
+  }
+  [data-view="detail"] .carousel-controls {
+    top: 66.706161%;
     left: auto;
     right: var(--gutter);
-    gap: .36em;
+    font-size: inherit;
   }
   .carousel-controls button {
     min-width: 1em;

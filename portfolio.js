@@ -170,7 +170,7 @@ function render(next, moveFocus = false) {
   intro.inert = detail;
   const advertisingList = view === 'projects' && category === 'advertising';
   page.toggleAttribute('data-advertising-list', advertisingList);
-  if (!detail) intro.textContent = advertisingList ? advertisingIntro : homeIntro;
+  if (!detail) renderIntro(advertisingList ? advertisingIntro : homeIntro);
   caption.inert = detail;
 
   if (detail) {
@@ -190,6 +190,27 @@ function render(next, moveFocus = false) {
       (detail ? projectTitle : target?.querySelector('a, button') || formatNav.querySelector('a'))?.focus({ preventScroll: true });
     }, motion.matches ? 0 : 780);
   }
+}
+
+function renderIntro(copy) {
+  const defaultCopy = 'Коммуникационный дизайнер с опытом работы более 15 лет. Разрабатываю рекламу, айдентику, цифровые и печатные продукты. Визуальный стиль, иерархия и системы, которые работают на любых носителях — от книжного разворота до рекламного щита.';
+  if (copy.replace(/\s+/g, ' ').trim() !== defaultCopy) {
+    intro.textContent = copy;
+    return;
+  }
+  const desktop = document.createElement('span');
+  desktop.className = 'intro-desktop-copy';
+  desktop.textContent = copy;
+  const mobile = document.createElement('span');
+  mobile.className = 'intro-mobile-copy';
+  mobile.textContent = [
+    'Коммуникационный дизайнер с опытом работы',
+    'более 15 лет. Реклама, айдентика, цифровые и печатные',
+    'продукты. Визуальный стиль, иерархия и системы,',
+    'которые работают на любых носителях —',
+    'от книжного разворота до рекламного щита.',
+  ].join('\n');
+  intro.replaceChildren(desktop, mobile);
 }
 
 function visibleSlides() {
