@@ -1,0 +1,82 @@
+/* Direct artwork navigation: a transparent interaction plane occupies
+   precisely the grey gallery, but never covers the editorial links or menu. */
+.gallery-hitarea {
+  position: absolute;
+  inset: 28.703704% 0 0 30.729167%;
+  z-index: 1;
+  overflow: hidden;
+  cursor: none;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.gallery-hitarea[data-dragging] {
+  cursor: grabbing;
+}
+.gallery-cursor {
+  position: absolute;
+  z-index: 1;
+  left: var(--cursor-x, 50%);
+  top: var(--cursor-y, 50%);
+  transform: translate(-50%, -50%);
+  font-family: inherit;
+  font-size: clamp(30px, 3vw, 52px);
+  font-weight: 400;
+  line-height: 1;
+  color: var(--gallery-ink, #111);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+}
+@media (hover: hover) and (pointer: fine) {
+  .gallery-hitarea[data-hover] .gallery-cursor { opacity: 1; }
+}
+.portfolio[data-opening] .gallery-hitarea,
+.portfolio[data-view="detail"] .gallery-hitarea,
+.portfolio[data-book] .gallery-hitarea {
+  visibility: hidden;
+  pointer-events: none;
+}
+.portfolio > .caption,
+.portfolio > .carousel-controls,
+.portfolio > .intro,
+.portfolio > .menu,
+.portfolio > .project-info,
+.portfolio > .brandbook,
+.portfolio .top-action,
+.portfolio .name,
+.portfolio .project-title {
+  z-index: 3;
+}
+/* During a swipe the old artwork moves with the pointer, showing the
+   upcoming cover underneath. The entire gallery still clips the edges. */
+.image-field .slide.is-peek {
+  opacity: 1;
+  z-index: 1;
+}
+.image-field .slide.is-current {
+  z-index: 2;
+}
+/* Only the project/client name is a route. Its permanent underline
+   distinguishes it from the category and from the clickable image area. */
+.caption #slide-title {
+  text-decoration: underline;
+  text-decoration-color: currentColor;
+  text-decoration-thickness: max(1px, .022em);
+  text-underline-offset: .16em;
+}
+.caption .caption-link {
+  text-decoration: none;
+}
+@media (max-aspect-ratio: 1/1) {
+  .gallery-hitarea {
+    inset: var(--image-top) 0 calc(100% - var(--image-end)) 0;
+  }
+}
+@media (hover: none), (pointer: coarse) {
+  .gallery-hitarea { cursor: auto; }
+  .gallery-cursor { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gallery-cursor { transition: none !important; }
+}
