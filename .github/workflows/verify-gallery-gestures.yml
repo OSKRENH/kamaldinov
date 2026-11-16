@@ -59,10 +59,10 @@ jobs:
                   def next_of(x): return x % total + 1
                   def prev_of(x): return (x-2+total)%total + 1
                   page.mouse.click(box['x']+box['width']*.82,box['y']+box['height']*.35)
-                  page.wait_for_function('n => Number(document.querySelector(".counter-number").textContent) === n',next_of(initial))
+                  page.wait_for_function('n => Number(document.querySelector(".counter-number").textContent) === n',arg=next_of(initial))
                   assert not page.evaluate('location.hash')
                   page.mouse.click(box['x']+box['width']*.18,box['y']+box['height']*.35)
-                  page.wait_for_function('n => Number(document.querySelector(".counter-number").textContent) === n',initial)
+                  page.wait_for_function('n => Number(document.querySelector(".counter-number").textContent) === n',arg=initial)
                   # Drag the current artwork left toward the next slide.
                   x0=box['x']+box['width']*.8
                   y0=box['y']+box['height']*.45
@@ -71,7 +71,7 @@ jobs:
                   for n in range(1,8):
                       page.mouse.move(x0-box['width']*.55*n/7,y0,steps=2)
                   page.mouse.up()
-                  page.wait_for_function('n => Number(document.querySelector(".counter-number").textContent) === n',next_of(initial))
+                  page.wait_for_function('n => Number(document.querySelector(".counter-number").textContent) === n',arg=next_of(initial))
                   # Only the underlined client name routes to the project.
                   client_link=page.locator('#caption-link')
                   assert client_link.is_visible()
@@ -88,9 +88,9 @@ jobs:
                   initial=num(page)
                   y=box['y']+box['height']*.35
                   page.touchscreen.tap(box['x']+box['width']*.8,y)
-                  page.wait_for_function('n => Number(document.querySelector(".counter-number").textContent) === n',initial%total+1)
+                  page.wait_for_function('n => Number(document.querySelector(".counter-number").textContent) === n',arg=initial%total+1)
                   page.touchscreen.tap(box['x']+box['width']*.2,y)
-                  page.wait_for_function('n => Number(document.querySelector(".counter-number").textContent) === n',initial)
+                  page.wait_for_function('n => Number(document.querySelector(".counter-number").textContent) === n',arg=initial)
                   # Simulate a real Chromium touch swipe from right to left.
                   cdp=context.new_cdp_session(page)
                   sx=box['x']+box['width']*.8; ex=box['x']+box['width']*.2
@@ -100,7 +100,7 @@ jobs:
                       cdp.send('Input.dispatchTouchEvent',{'type':'touchMove','touchPoints':[{'x':sx+(ex-sx)*j/8,'y':sy,'id':1}]})
                       page.wait_for_timeout(18)
                   cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]})
-                  page.wait_for_function('n => Number(document.querySelector(".counter-number").textContent) === n',initial%total+1)
+                  page.wait_for_function('n => Number(document.querySelector(".counter-number").textContent) === n',arg=initial%total+1)
                   assert not page.evaluate('location.hash')
                   assert not errors, errors
                   print('MOBILE: left/right taps and horizontal swipe PASS')
