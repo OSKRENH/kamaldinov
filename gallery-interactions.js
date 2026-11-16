@@ -115,15 +115,23 @@ export function createGalleryInteractions({
     const isSwipe = dragged && Math.abs(dx) >= distance
       && Math.abs(dx) > Math.abs(dy) * 1.15;
 
-    restore(!isSwipe && dragged);
+    if (isSwipe && enabled()) {
+      // Keep the actual drag offset and the revealed neighbour on screen.
+      // The gallery transition receives this frame and continues FROM it.
+      const handoff = { element: gesture.element, offset: dx };
+      gesture = null;
+      layer.removeAttribute('data-dragging');
+      if (layer.hasPointerCapture(event.pointerId)) layer.releasePointerCapture(event.pointerId);
+      onStep(dx < 0 ? 1 : -1, true, handoff);
+      return;
+    }
+
+    restore(dragged);
     layer.removeAttribute('data-dragging');
     if (layer.hasPointerCapture(event.pointerId)) layer.releasePointerCapture(event.pointerId);
     if (!enabled()) { onResume(); return; }
 
-    if (isSwipe) {
-      // Natural drag direction: move artwork left to see the next project.
-      onStep(dx < 0 ? 1 : -1);
-    } else if (!dragged && Math.abs(dx) < 12 && Math.abs(dy) < 12) {
+    if (!dragged && Math.abs(dx) < 12 && Math.abs(dy) < 12) {
       const box = layer.getBoundingClientRect();
       onStep(event.clientX < box.left + box.width / 2 ? -1 : 1);
     } else {
