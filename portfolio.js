@@ -2,13 +2,13 @@ import { categories, normalize } from './admin/model.js';
 import { bookFor, brandbookGallery } from './brandbooks.js?v=1';
 import { createOpening } from './opening.js?v=9';
 import { matchGalleryInk } from './gallery-ink.js?v=1';
+import { createGalleryInteractions } from './gallery-interactions.js?v=1';
 
 const page = document.querySelector('#portfolio');
 const field = document.querySelector('.image-field');
 const progressFill = field.querySelector('.gallery-progress-fill');
 const caption = document.querySelector('#caption-link');
 const controls = document.querySelector('.carousel-controls');
-const carouselArrows = controls.querySelectorAll('button');
 const counterWindow = controls.querySelector('.counter-window');
 const counterTotal = controls.querySelector('.counter-total');
 const status = document.querySelector('#slide-status');
@@ -56,6 +56,18 @@ let counterValue = null;
 let paused = motion.matches;
 let carouselFocused = false;
 let projectHovered = false;
+
+const galleryInteractions = createGalleryInteractions({
+  page,
+  field,
+  layer: document.querySelector('#gallery-hitarea'),
+  cursor: document.querySelector('#gallery-cursor'),
+  getSlides: visibleSlides,
+  getCurrent: () => currentSlide,
+  onStep: step,
+  onHold: () => { clearTimeout(timer); stopProgress(); },
+  onResume: schedule,
+});
 
 function path(category, format, project) {
   const parts = [category, format, project];
@@ -155,6 +167,7 @@ function renderMenus(next) {
 
 let focusTimer;
 function render(next, moveFocus = false) {
+  galleryInteractions.reset();
   if (next.view !== 'home' && page.hasAttribute('data-opening')) opening.cancel();
   clearTimeout(focusTimer);
   renderMenus(next);
@@ -199,7 +212,6 @@ function render(next, moveFocus = false) {
     ? set.filter((slide) => slide.project.cover).at(-1) : null;
   const selected = set.includes(currentSlide) ? currentSlide : (introFinal || set[0]);
   showSlide(selected);
-  for (const arrow of carouselArrows) arrow.disabled = set.length < 2;
   schedule();
 
   if (moveFocus && (active?.closest('[inert]') || active === document.body)) {
@@ -532,8 +544,6 @@ page.addEventListener('click', (event) => {
     } else navigate(routeLink.dataset.route);
   }
   if (event.target.closest('[data-back]')) back();
-  const arrow = event.target.closest('[data-step]');
-  if (arrow) step(Number(arrow.dataset.step));
 });
 function updateCarouselFocus() {
   const active = document.activeElement;
