@@ -10,8 +10,9 @@
   <link rel="stylesheet" href="./portfolio.css?v=blend-1">
   <link rel="stylesheet" href="./brandbooks.css?v=1">
   <link rel="stylesheet" href="./opening.css?v=contrast-2">
-  <link rel="stylesheet" href="./gallery-transitions.css?v=popolam-fullpage-1">
-  <script type="module" src="./portfolio.js?v=popolam-code-2"></script>
+  <link rel="stylesheet" href="./gallery-transitions.css?v=gallery-hit-1"
+  <link rel="stylesheet" href="./gallery-interactions.css?v=1">
+  <script type="module" src="./portfolio.js?v=gallery-hit-1"></script>
 </head>
 <body>
   <main class="portfolio" id="portfolio" data-view="home" data-opening="reel">
@@ -19,6 +20,9 @@
       <div class="opening-reel" aria-hidden="true"></div>
       <div class="gallery-progress" aria-hidden="true"><div class="gallery-progress-fill"></div></div>
     </figure>
+    <div class="gallery-hitarea" id="gallery-hitarea" aria-hidden="true">
+      <span class="gallery-cursor" id="gallery-cursor" aria-hidden="true">→</span>
+    </div>
     <header>
       <h1 class="name"><span class="given-name"><span>Иван</span></span> <span class="family-name"><span>Камальдинов</span></span></h1>
       <h1 class="project-title" id="project-title" tabindex="-1" inert></h1>
@@ -31,18 +35,14 @@
 Визуальный стиль, иерархия и системы, которые работают на любых носителях — от книжного разворота до рекламного щита.</p>
 
     <div class="caption" id="caption">
+      <span id="slide-category"></span>
       <a class="caption-link" id="caption-link" hidden>
-        <span id="slide-category"></span>
         <span id="slide-title"></span>
       </a>
     </div>
     <div class="carousel-controls" aria-label="Карусель">
       <div class="slide-counter" role="status" aria-live="polite" aria-atomic="true" aria-label="Номер изображения">
         <span class="counter-window"><span class="counter-number">01</span></span><span class="counter-divider">/</span><span class="counter-total">15</span>
-      </div>
-      <div class="carousel-arrows">
-        <button type="button" data-step="-1" aria-label="Предыдущее изображение">←</button>
-        <button type="button" data-step="1" aria-label="Следующее изображение">→</button>
       </div>
     </div>
     <span id="slide-status" class="visually-hidden" aria-live="polite"></span>
