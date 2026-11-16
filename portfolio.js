@@ -2,7 +2,7 @@ import { categories, normalize } from './admin/model.js';
 import { bookFor, brandbookGallery } from './brandbooks.js?v=1';
 import { createOpening } from './opening.js?v=9';
 import { matchGalleryInk } from './gallery-ink.js?v=1';
-import { createGalleryInteractions } from './gallery-interactions.js?v=1';
+import { createGalleryInteractions } from './gallery-interactions.js?v=2';
 
 const page = document.querySelector('#portfolio');
 const field = document.querySelector('.image-field');
@@ -307,11 +307,15 @@ function updateSlideCounter(slide, direction = 1, immediate = false) {
 function cancelSlideMotion() {
   slideAnimations.forEach((animation) => animation.cancel());
   slideAnimations = [];
+  for (const element of field.querySelectorAll('.slide.is-swipe-outgoing')) {
+    element.classList.remove('is-swipe-outgoing');
+    element.style.removeProperty('transform');
+  }
 }
 
 // Editorial motion: the new poster uncovers from the chosen direction while
 // the outgoing artwork gently recedes. The grey gallery background never moves.
-function showSlide(slide, announce = false, direction = 1) {
+function showSlide(slide, announce = false, direction = 1, dragHandoff = null) {
   if (slide && slide === currentSlide) return;
   currentSlide = slide || null;
   const request = ++slideRequest;
@@ -343,11 +347,13 @@ function showSlide(slide, announce = false, direction = 1) {
 
     cancelSlideMotion();
     const previous = currentElement !== element && currentElement?.isConnected ? currentElement : null;
+    const handoff = Boolean(dragHandoff && previous === dragHandoff.element);
     const animate = Boolean(previous && !motion.matches && !page.hasAttribute('data-opening')
       && route?.view !== 'detail');
 
     for (const item of field.querySelectorAll('.slide')) {
       item.classList.remove('is-current', 'is-outgoing');
+      if (!handoff) item.classList.remove('is-peek');
       item.setAttribute('aria-hidden', 'true');
     }
 
@@ -358,13 +364,45 @@ function showSlide(slide, announce = false, direction = 1) {
     }
     if (!element.isConnected) field.append(element);
     element.removeAttribute('aria-hidden');
-    if (animate) previous.classList.add('is-outgoing');
+    if (animate && !handoff) previous.classList.add('is-outgoing');
+    if (handoff) previous.classList.add('is-swipe-outgoing');
     element.classList.add('is-current');
     currentElement = element;
     matchGalleryInk(page, slide);
     updateSlideCounter(slide, direction, !animate);
 
-    if (!animate) return;
+    if (!animate) {
+      if (handoff) {
+        previous.style.removeProperty('transform');
+        previous.classList.remove('is-swipe-outgoing');
+        element.classList.remove('is-peek');
+      }
+      return;
+    }
+
+    if (handoff) {
+      // No second curtain animation: keep the new cover already revealed
+      // under the dragged old cover and continue sliding the old one
+      // from the finger's exact release offset to outside the gallery.
+      const width = Math.max(1, field.clientWidth);
+      const start = dragHandoff.offset;
+      const end = (direction > 0 ? -1 : 1) * (width + 40);
+      const fraction = Math.min(1, Math.abs(start) / width);
+      const duration = Math.max(170, Math.round(540 * (1 - fraction)));
+      const continuation = previous.animate([
+        { transform: `translate3d(${start}px, 0, 0)` },
+        { transform: `translate3d(${end}px, 0, 0)` },
+      ], { duration, easing: 'cubic-bezier(.22, .8, .22, 1)', fill: 'both' });
+      slideAnimations.push(continuation);
+      continuation.finished.then(() => {
+        if (request !== slideRequest) return;
+        previous.style.removeProperty('transform');
+        previous.classList.remove('is-swipe-outgoing');
+        element.classList.remove('is-peek');
+        cancelSlideMotion();
+      }).catch(() => {});
+      return;
+    }
 
     const duration = 820;
     const ease = 'cubic-bezier(.2, .82, .2, 1)';
@@ -414,11 +452,11 @@ document.addEventListener('keydown', () => {
   delete document.documentElement.dataset.input;
 }, true);
 
-function step(direction, announce = true) {
+function step(direction, announce = true, dragHandoff = null) {
   const set = visibleSlides();
   if (set.length < 2) return;
   const index = set.indexOf(currentSlide);
-  showSlide(set[(index + direction + set.length) % set.length], announce, direction);
+  showSlide(set[(index + direction + set.length) % set.length], announce, direction, dragHandoff);
   schedule();
 }
 
