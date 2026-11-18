@@ -1,4 +1,4 @@
-import { createA5Case, isA5 } from './a5-case.js?v=1';
+import { createA5Case, isA5 } from './a5-case.js?v=2';
 import { categories, normalize } from './admin/model.js';
 import { bookFor, brandbookGallery } from './brandbooks.js?v=1';
 import { createOpening } from './opening.js?v=9';

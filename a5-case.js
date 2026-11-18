@@ -1,31 +1,87 @@
-const sections = [
-  { id: 'intro', title: 'О системе', pages: [[2, 'Содержание'], [3, 'Задача руководства']] },
-  { id: 'identity', title: 'Фирменный стиль', pages: [[4, 'Построение знака'], [5, 'Охранное поле'], [6, 'Цветовая палитра'], [7, 'Типографика Onest']] },
-  { id: 'applications', title: 'Носители', pages: [[8, 'Визитная карточка'], [9, 'Сетка визитки'], [10, 'Фирменный бланк'], [11, 'Сетка бланка'], [12, 'Рекламный щит'], [13, 'Сетка рекламного щита'], [14, 'Режимная таблица'], [15, 'Сетка режимной таблицы'], [16, 'Брошюра'], [17, 'Бейдж']] },
+import { logoPaths, construction, clearSpacePaths, clearSpaceGuides, mockups } from './a5-geometry.js?v=2';
+
+const chapters = [
+  ['overview', 'Вступление', 'Руководство по фирменному стилю А5. Оно задаёт общие правила для рекламы, печатных материалов, деловой документации и навигации.', '01–03'],
+  ['logo', 'Логотип', 'Диагональ А и открытая дуга 5 образуют знак. Направляющие показывают его пропорции, а охранное поле оставляет вокруг него свободное пространство.', '04–05'],
+  ['color', 'Цвет', 'Основной тон — тёплый серо-бежевый. Вторичный добавляет глубину, акцентный выделяет детали, нейтральный и комплементарный дают светлые фоны.', '06'],
+  ['type', 'Шрифт', 'Onest Medium — для заголовков и выделений. Onest Regular — для основного текста. Введите свою фразу, чтобы сравнить начертания.', '07'],
+  ['card', 'Визитная карточка', 'Логотип на лицевой стороне нанесён тиснением. Оборот собран на той же сетке.', '08–09', '90 × 50 мм · Поля 5 мм · 5 × 5 модулей'],
+  ['letter', 'Официальный бланк', 'Реквизиты, текст письма и подпись распределены по одной модульной сетке.', '10–11', 'А4 · Поля 10 мм, слева 20 мм · 5 колонок × 10 рядов'],
+  ['billboard', 'Рекламный щит', 'Крупный знак задаёт композицию щита, а сообщение и контакты выровнены по общим направляющим.', '12–13', '6 × 3 м · Поля 30 см · 10 колонок × 5 рядов'],
+  ['sign', 'Режимная таблица', 'Часы работы расположены в верхней части, знак занимает нижнюю половину таблички.', '14–15', 'А4 или пропорциональный формат · Поля 10 мм, слева 20 мм · 5 колонок × 10 рядов'],
+  ['brochure', 'Брошюра', 'Схема показывает расположение заголовка и крупного знака на обложке.', '16'],
+  ['badge', 'Бейдж', 'Схема показывает, как на бейдже разделены фотография и нижнее поле с именем и знаком.', '17'],
 ];
 const palette = [
-  ['#C3BCB4', 'Основной', '#262321'],
-  ['#746661', 'Вторичный', '#fff'],
-  ['#B68150', 'Акцентный', '#211c17'],
-  ['#E5E1E6', 'Нейтральный', '#262321'],
-  ['#B0BFBC', 'Комплементарный', '#262321'],
+  ['Основной', '#C3BCB4', '400 C', '26 22 27 4', '195 188 180', '#262321'],
+  ['Вторичный', '#746661', '410 C', '47 47 47 35', '116 102 97', '#fff'],
+  ['Акцентный', '#B68150', '729 C', '24 48 70 14', '182 129 80', '#211c17'],
+  ['Нейтральный', '#E5E1E6', '663 C', '12 11 8 0', '229 225 230', '#262321'],
+  ['Комплементарный', '#B0BFBC', '5517 C', '36 17 26 2', '176 191 188', '#262321'],
+];
+const pageLabels = [
+  'Обложка', 'Содержание', 'Вступление', 'Построение знака', 'Охранное поле',
+  'Цветовая палитра', 'Типографика', 'Визитная карточка', 'Сетка визитки', 'Официальный бланк',
+  'Сетка бланка', 'Рекламный щит', 'Сетка щита', 'Режимная таблица', 'Сетка таблицы', 'Брошюра', 'Бейдж',
 ];
 const pageNumber = (number) => String(number).padStart(2, '0');
-const pageUrl = (number) => new URL('./images/brandbooks/a5/' + pageNumber(number) + '.webp', import.meta.url).href;
+const asset = (name) => new URL('./images/brandbooks/a5/' + name + '.webp', import.meta.url).href;
+const paths = (items) => items.map((d) => `<path d="${d}"/>`).join('');
+const logo = paths(logoPaths);
 
 export function isA5(project) {
   return project?.category === 'identity' && project.subcategory === 'Брендбуки' &&
     /\/images\/brandbooks\/a5\/01\.webp$/.test(project.cover);
 }
 
-function pageCard([number, label], cover = false) {
-  return `<figure class="a5-page${cover ? ' a5-cover' : ''}" data-a5-reveal>
-    <button class="a5-page-open" type="button" data-a5-page="${number}" aria-label="Увеличить: ${label}">
-      <img src="${pageUrl(number)}" loading="${cover ? 'eager' : 'lazy'}" decoding="async"
-        width="1900" height="1343" alt="${label}">
-    </button>
-    <figcaption><span>${label}</span><span>${pageNumber(number)} / 17</span></figcaption>
-  </figure>`;
+function tabs(items, attribute, name, initial) {
+  return `<div class="a5-options" role="group" aria-label="${name}">
+    ${items.map(([value, label]) => `<button type="button" ${attribute}="${value}" aria-pressed="${value === initial}">${label}</button>`).join('')}
+  </div>`;
+}
+
+function logoStage(isCover) {
+  return `<div class="a5-stage a5-mark-stage${isCover ? ' a5-cover' : ''}" data-mark-mode="mark">
+    <svg viewBox="115 -22 660 480" role="img" aria-label="Фирменный знак А5">
+      <g class="a5-mark">${logo}</g>
+      <path class="a5-construction a5-guide" d="${construction}"/>
+      <g class="a5-clear" transform="translate(-981.7 -68.4) scale(2.111)">${paths(clearSpacePaths.slice(0, 4))}
+        <path class="a5-guide" d="${clearSpaceGuides}"/>
+      </g>
+    </svg>
+  </div>`;
+}
+
+function colorStage() {
+  return `<div class="a5-stage a5-color" style="--sample:${palette[0][1]};--sample-ink:${palette[0][5]}">
+    <svg viewBox="246.5 83.8 398.6 265.8" aria-hidden="true">${logo}</svg>
+    <output class="a5-color-values" aria-live="polite"></output>
+  </div>
+  <div class="a5-colors" role="group" aria-label="Фирменная палитра">
+    ${palette.map(([label, hex], i) => `<button type="button" data-swatch="${i}" style="--swatch:${hex}" aria-pressed="${i === 0}">
+      <span aria-hidden="true"></span><span>${label}</span><span>${hex}</span></button>`).join('')}
+  </div>`;
+}
+
+function typeStage() {
+  return `<div class="a5-stage a5-type" data-weight="500">
+    <label for="a5-specimen">Образец Onest</label>
+    <textarea id="a5-specimen" rows="2" maxlength="96" spellcheck="false">Управление комфортом</textarea>
+    <p>Аа Бб Вв Гг Дд Ее Жж Зз Ии Кк Лл Мм Нн Оо Пп Рр Сс Тт Уу Фф Хх Цц Чч Шш Щщ Ъъ Ыы Ьь Ээ Юю Яя <span>0123456789</span></p>
+  </div>`;
+}
+
+function mockupStage(id, label) {
+  const [height, grid] = mockups[id];
+  return `<button class="a5-stage a5-mockup" type="button" data-mockup="${id}" data-grid aria-label="Сетка · ${label}" aria-pressed="false">
+    <span class="a5-mockup-art" style="--ratio:${1000 / height}">
+      <img src="${asset(id)}" alt="" width="1000" height="${Math.round(height)}" decoding="async">
+      <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+        <path class="a5-grid-shadow" d="${grid}"/>
+        <path class="a5-guide" d="${grid}"/>
+      </svg>
+    </span>
+  </button>`;
 }
 
 export function createA5Case(root, motion) {
@@ -34,63 +90,113 @@ export function createA5Case(root, motion) {
   const zoomLabel = dialog.querySelector('.a5-zoom-label');
   const prev = dialog.querySelector('[data-a5-zoom="-1"]');
   const next = dialog.querySelector('[data-a5-zoom="1"]');
-  const pages = ['Обложка', ...sections.flatMap((section) => section.pages.map((page) => page[1]))];
-  let observer, sectionObserver, currentPage, built = false;
+  let stage, title, copy, specs, options, pageButton, active, currentPage;
 
-  function labelPalette(button) {
-    const [color, label, ink] = palette[Number(button.dataset.swatch)];
-    const sample = root.querySelector('.a5-sample');
-    sample.style.setProperty('--sample', color);
+  function chooseColor(index) {
+    const [label, hex, pantone, cmyk, rgb, ink] = palette[index];
+    const sample = stage.querySelector('.a5-color');
+    sample.style.setProperty('--sample', hex);
     sample.style.setProperty('--sample-ink', ink);
-    sample.querySelector('output').textContent = label + ' · ' + color;
-    for (const option of root.querySelectorAll('[data-swatch]')) {
-      option.setAttribute('aria-pressed', String(option === button));
+    sample.querySelector('output').textContent = `${label} · ${hex}\nPantone ${pantone} · CMYK ${cmyk} · RGB ${rgb}`;
+    for (const button of stage.querySelectorAll('[data-swatch]')) {
+      button.setAttribute('aria-pressed', String(Number(button.dataset.swatch) === index));
     }
   }
 
+  function showChapter(id) {
+    const [key, label, description, spread, details] = chapters.find(([entry]) => entry === id);
+    active = key;
+    title.textContent = label;
+    copy.textContent = description;
+    specs.textContent = details || '';
+    for (const button of root.querySelectorAll('[data-chapter]')) {
+      if (button.dataset.chapter === key) button.setAttribute('aria-current', 'true');
+      else button.removeAttribute('aria-current');
+    }
+    pageButton.dataset.original = spread.split('–')[0];
+    pageButton.textContent = `Брендбук · ${spread} / 17 ↗`;
+    if (key === 'overview' || key === 'logo') stage.innerHTML = logoStage(key === 'overview');
+    else if (key === 'color') stage.innerHTML = colorStage();
+    else if (key === 'type') stage.innerHTML = typeStage();
+    else stage.innerHTML = mockupStage(key, label);
+    options.innerHTML = key === 'logo'
+      ? tabs([['mark', 'Знак'], ['construction', 'Построение'], ['clear', 'Охранное поле']], 'data-mark', 'Вид логотипа', 'mark')
+      : key === 'type'
+        ? tabs([['500', 'Medium'], ['400', 'Regular']], 'data-weight', 'Начертание Onest', '500')
+        : Object.hasOwn(mockups, key) ? '<button type="button" data-grid aria-pressed="false">Показать сетку</button>' : '';
+    if (key === 'color') chooseColor(0);
+    if (!motion.matches) stage.animate(
+      [{ opacity: .55, transform: 'translateX(9px)' }, { opacity: 1, transform: 'translateX(0)' }],
+      { duration: 320, easing: getComputedStyle(root).getPropertyValue('--ease').trim() },
+    );
+  }
+
   function build() {
-    root.innerHTML = `<div class="a5-top"><div class="a5-grid a5-top-grid">
-      <button type="button" data-back class="a5-back">← Назад</button>
-      <nav aria-label="Разделы кейса">${sections.map(({ id, title }) => `<button type="button" data-chapter="${id}">${title}</button>`).join('')}</nav>
-    </div></div>
-    <div class="a5-body">
-      <header class="a5-grid a5-hero">
-        <div class="a5-title"><p>Айдентика</p><h1 tabindex="-1">A5</h1><p>Руководство по фирменному стилю</p></div>
-        ${pageCard([1, 'Обложка'], true)}
-      </header>
-      ${sections.map(({ id, title, pages }) => `<section id="a5-${id}" class="a5-grid a5-chapter" aria-labelledby="a5-${id}-title">
-        <h2 id="a5-${id}-title" data-a5-reveal>${title}</h2>
-        ${pages.map(page => pageCard(page)).join('')}
-        ${id === 'identity' ? `<div class="a5-palette" data-a5-reveal>
-          <div class="a5-sample"><span aria-hidden="true">A5</span><output aria-live="polite"></output></div>
-          <div class="a5-swatches" aria-label="Цвета A5">${palette.map(([hex, label], i) => `<button type="button" data-swatch="${i}" style="--swatch:${hex}" aria-pressed="false"><span>${label}</span><span>${hex}</span></button>`).join('')}</div>
-        </div>` : ''}
-      </section>`).join('')}
+    root.innerHTML = `<header class="a5-grid a5-header">
+      <h1 tabindex="-1">А5</h1>
+      <a href="#/identity/%D0%91%D1%80%D0%B5%D0%BD%D0%B4%D0%B1%D1%83%D0%BA%D0%B8" class="a5-back" data-back>Назад</a>
+    </header>
+    <div class="a5-grid a5-layout">
+      <section class="a5-copy" aria-labelledby="a5-chapter-title" aria-live="polite">
+        <h2 id="a5-chapter-title"></h2><p></p><p class="a5-specs"></p>
+      </section>
+      <nav class="a5-contents" aria-label="Разделы брендбука">
+        <div class="a5-chapters">
+          <div>${chapters.slice(0, 4).map(([id, label]) => `<button type="button" data-chapter="${id}">${label}</button>`).join('')}</div>
+          <div>${chapters.slice(4).map(([id, label]) => `<button type="button" data-chapter="${id}">${label}</button>`).join('')}</div>
+        </div>
+        <button class="a5-original" type="button" data-original></button>
+      </nav>
+      <div class="a5-visual">
+        <div class="a5-visual-content"></div><div class="a5-visual-options"></div>
+      </div>
     </div>`;
-    labelPalette(root.querySelector('[data-swatch]'));
-    built = true;
+    const content = root.querySelector('.a5-copy');
+    stage = root.querySelector('.a5-visual-content');
+    title = content.querySelector('h2');
+    copy = content.querySelector('p');
+    specs = content.querySelector('.a5-specs');
+    options = root.querySelector('.a5-visual-options');
+    pageButton = root.querySelector('[data-original]');
   }
 
   function selectPage(number) {
-    if (number < 1 || number > pages.length) return;
+    if (number < 1 || number > pageLabels.length) return;
     currentPage = number;
-    zoomLabel.textContent = pageNumber(number) + ' / 17 · ' + pages[number - 1];
-    zoomImage.alt = pages[number - 1] + ', страница ' + number;
-    zoomImage.src = pageUrl(number);
+    zoomLabel.textContent = pageNumber(number) + ' / 17 · ' + pageLabels[number - 1];
+    zoomImage.alt = pageLabels[number - 1] + ', страница ' + number;
+    zoomImage.src = asset(pageNumber(number));
     prev.disabled = number === 1;
-    next.disabled = number === pages.length;
+    next.disabled = number === pageLabels.length;
   }
 
   root.addEventListener('click', (event) => {
+    if (event.target.closest('[data-back]')) {
+      if (!event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) event.preventDefault();
+      else event.stopPropagation();
+      return;
+    }
     const button = event.target.closest('button');
     if (!button) return;
-    if (button.hasAttribute('data-a5-page')) {
-      selectPage(Number(button.dataset.a5Page));
+    if (button.hasAttribute('data-chapter') && active !== button.dataset.chapter) showChapter(button.dataset.chapter);
+    if (button.hasAttribute('data-original')) {
+      selectPage(Number(button.dataset.original));
       dialog.showModal();
-    } else if (button.hasAttribute('data-chapter')) {
-      root.querySelector('#a5-' + button.dataset.chapter).scrollIntoView({ behavior: motion.matches ? 'instant' : 'smooth', block: 'start' });
-    } else if (button.hasAttribute('data-swatch')) labelPalette(button);
+      dialog.scrollTop = dialog.scrollLeft = 0;
+    }
+    if (button.hasAttribute('data-swatch')) chooseColor(Number(button.dataset.swatch));
+    if (button.hasAttribute('data-grid')) {
+      const enabled = button.getAttribute('aria-pressed') !== 'true';
+      for (const toggle of root.querySelectorAll('[data-grid]')) toggle.setAttribute('aria-pressed', String(enabled));
+      options.firstElementChild.textContent = enabled ? 'Скрыть сетку' : 'Показать сетку';
+    }
+    if (button.hasAttribute('data-mark') || button.hasAttribute('data-weight')) {
+      const mode = button.hasAttribute('data-mark') ? 'mark' : 'weight';
+      stage.firstElementChild.dataset[mode === 'mark' ? 'markMode' : 'weight'] = button.dataset[mode];
+      for (const toggle of options.querySelectorAll('button')) toggle.setAttribute('aria-pressed', String(toggle === button));
+    }
   });
+
   dialog.addEventListener('click', (event) => {
     const button = event.target.closest('[data-a5-zoom]');
     if (button) selectPage(currentPage + Number(button.dataset.a5Zoom));
@@ -104,39 +210,15 @@ export function createA5Case(root, motion) {
   return {
     dialog,
     open(focus) {
-      if (!built) build();
       if (!root.hidden) return;
+      if (!stage) build();
       root.hidden = false;
+      showChapter('overview');
       root.scrollTop = 0;
       if (focus) root.querySelector('h1').focus({ preventScroll: true });
-      if (!motion.matches && 'IntersectionObserver' in window) {
-        observer = new IntersectionObserver((entries) => {
-          for (const entry of entries) {
-            if (!entry.isIntersecting) continue;
-            entry.target.animate([{ opacity: .4, transform: 'translateY(14px)' }, { opacity: 1, transform: 'translateY(0)' }],
-              { duration: 460, easing: 'cubic-bezier(.22, 1, .36, 1)' });
-            observer.unobserve(entry.target);
-          }
-        }, { root, threshold: .16 });
-        root.querySelectorAll('[data-a5-reveal]').forEach((node) => observer.observe(node));
-      }
-      if ('IntersectionObserver' in window) {
-        sectionObserver = new IntersectionObserver((entries) => {
-          const visible = entries.filter((entry) => entry.isIntersecting).at(-1);
-          if (!visible) return;
-          for (const button of root.querySelectorAll('[data-chapter]')) {
-            if (visible.target.id === 'a5-' + button.dataset.chapter) button.setAttribute('aria-current', 'location');
-            else button.removeAttribute('aria-current');
-          }
-        }, { root, rootMargin: '-12% 0px -62% 0px' });
-        root.querySelectorAll('.a5-hero, .a5-chapter').forEach((node) => sectionObserver.observe(node));
-      }
     },
     close() {
-      observer?.disconnect();
-      sectionObserver?.disconnect();
       if (dialog.open) dialog.close();
-      root.querySelector('[data-chapter][aria-current]')?.removeAttribute('aria-current');
       root.hidden = true;
     },
   };
