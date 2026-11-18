@@ -1,0 +1,162 @@
+[data-a5] > :not(.a5-case) { visibility: hidden; }
+.a5-case {
+  --a5-gap: clamp(8px, .78125vw, 30px);
+  --a5-margin: 2.604167%;
+  --a5-paper: #f7f5f2;
+  --a5-ink: #262321;
+  --a5-line: #cec6bd;
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  color: var(--a5-ink);
+  background: var(--a5-paper);
+  font-size: clamp(13px, 1.12vw, 19px);
+  line-height: 1.35;
+  scrollbar-color: #9c8f81 var(--a5-paper);
+}
+.a5-grid {
+  display: grid;
+  grid-template-columns: repeat(15, minmax(0, 1fr));
+  column-gap: var(--a5-gap);
+  padding-inline: var(--a5-margin);
+}
+.a5-top {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--a5-paper);
+  border-bottom: 1px solid var(--a5-line);
+}
+.a5-top-grid { align-items: center; min-height: 64px; }
+.a5-back { grid-column: 1 / 5; justify-self: start; min-height: 44px; }
+.a5-top nav {
+  grid-column: 6 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: clamp(18px, 4vw, 70px);
+}
+.a5-top nav button { min-height: 44px; }
+.a5-top button:hover,
+.a5-top button[aria-current] { text-decoration: underline; text-underline-offset: .24em; }
+.a5-hero {
+  align-items: end;
+  padding-block: clamp(44px, 8vw, 124px) clamp(64px, 11vw, 150px);
+}
+.a5-title { grid-column: 1 / 5; align-self: start; }
+.a5-title h1 {
+  margin: -.025em 0 .045em;
+  font-size: clamp(6rem, 14vw, 16rem);
+  font-weight: 400;
+  line-height: .96;
+  letter-spacing: -.045em;
+}
+.a5-title p:last-child { max-width: 18ch; }
+.a5-cover { grid-column: 6 / -1; }
+.a5-page { min-width: 0; }
+.a5-page-open { display: block; width: 100%; cursor: zoom-in; overflow: clip; }
+.a5-page img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1900 / 1343;
+  object-fit: contain;
+  background: #ece8e3;
+  transition: transform 300ms var(--ease);
+}
+@media (hover: hover) {
+  .a5-page-open:hover img { transform: scale(1.012); }
+}
+.a5-page figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 10px;
+  color: #514740;
+}
+.a5-page figcaption span:last-child { flex: none; font-variant-numeric: tabular-nums; }
+.a5-chapter {
+  row-gap: clamp(25px, 5.2vw, 84px);
+  padding-block: clamp(32px, 6.5vw, 108px) clamp(50px, 9vw, 128px);
+  border-top: 1px solid var(--a5-line);
+  scroll-margin-top: 65px;
+}
+.a5-chapter h2 {
+  grid-column: 1 / -1;
+  font-size: clamp(34px, 5.5vw, 88px);
+  line-height: 1;
+  letter-spacing: -.035em;
+  font-weight: 400;
+}
+.a5-chapter .a5-page { grid-column: span 7; }
+.a5-chapter .a5-page:nth-of-type(even) { grid-column: 9 / -1; }
+.a5-palette {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(15, minmax(0, 1fr));
+  gap: var(--a5-gap);
+}
+.a5-sample {
+  grid-column: 1 / 11;
+  display: grid;
+  gap: 14px;
+  min-height: 245px;
+  padding: clamp(15px, 3.1vw, 50px);
+  background: var(--sample);
+  color: var(--sample-ink);
+  transition: background-color 280ms ease, color 280ms ease;
+}
+.a5-sample span { align-self: end; font-size: clamp(72px, 14vw, 170px); line-height: .9; letter-spacing: -.045em; }
+.a5-swatches { grid-column: 12 / -1; display: grid; }
+.a5-swatches button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 4px 6px 4px 12px;
+  border-bottom: 1px solid var(--a5-line);
+  border-left: 12px solid var(--swatch);
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+.a5-swatches button[aria-pressed="true"] { background: #ece6de; }
+
+.a5-zoom {
+  width: min(100% - 24px, 1900px);
+  height: calc(100% - 24px);
+  max-width: none;
+  max-height: none;
+  overflow: auto;
+  padding: 0 16px 16px;
+  background: #f7f5f2;
+  border: 0;
+}
+.a5-zoom form {
+  position: sticky;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 16px;
+  align-items: center;
+  background: #f7f5f2;
+}
+.a5-zoom form button { min-width: 44px; min-height: 44px; margin: 0; }
+.a5-zoom form button:disabled { opacity: .45; cursor: default; }
+.a5-zoom-label { margin-left: auto; font-variant-numeric: tabular-nums; }
+.a5-zoom img { display: block; width: 100%; min-width: 1050px; height: auto; }
+
+@media (max-width: 760px) {
+  .a5-case { --a5-margin: 5.128205%; }
+  .a5-grid, .a5-palette { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .a5-top-grid { min-height: 48px; }
+  .a5-back { grid-column: 1 / 2; white-space: nowrap; }
+  .a5-top nav { grid-column: 2 / -1; gap: clamp(8px, 2vw, 15px); }
+  .a5-top nav button { white-space: nowrap; }
+  .a5-title, .a5-cover, .a5-chapter .a5-page, .a5-chapter .a5-page:nth-of-type(even),
+  .a5-sample, .a5-swatches { grid-column: 1 / -1; }
+  .a5-hero { row-gap: 25px; }
+  .a5-chapter { scroll-margin-top: 49px; }
+  .a5-sample { min-height: 175px; }
+}

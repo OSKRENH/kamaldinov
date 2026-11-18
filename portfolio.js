@@ -1,3 +1,4 @@
+import { createA5Case, isA5 } from './a5-case.js?v=1';
 import { categories, normalize } from './admin/model.js';
 import { bookFor, brandbookGallery } from './brandbooks.js?v=1';
 import { createOpening } from './opening.js?v=9';
@@ -26,6 +27,7 @@ const cvDialog = document.querySelector('#cv');
 const detailBack = document.querySelector('.detail-back');
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const books = brandbookGallery(motion);
+const a5 = createA5Case(document.querySelector('#a5-case'), motion);
 const opening = createOpening({
   page, field, motion, selectSlide: showSlide,
   onLanding: (finalSlide) => {
@@ -174,7 +176,11 @@ function render(next, moveFocus = false) {
   const { view, project, category } = next;
   const detail = view === 'detail';
   const active = document.activeElement;
-  const book = detail ? bookFor(project) : null;
+  const a5Detail = detail && isA5(project);
+  const book = detail && !a5Detail ? bookFor(project) : null;
+  page.toggleAttribute('data-a5', a5Detail);
+  if (a5Detail) a5.open(moveFocus);
+  else a5.close();
   page.toggleAttribute('data-book', Boolean(book));
   if (book) books.open(book, project.title);
   else books.close();
@@ -186,9 +192,9 @@ function render(next, moveFocus = false) {
   categoryNav.inert = detail || (view === 'projects' && !directProjects);
   formatNav.inert = view !== 'formats' && !(view === 'projects' && !directProjects);
   projectNav.inert = view !== 'projects';
-  projectInfo.inert = !detail || Boolean(book);
-  projectTitle.inert = !detail;
-  detailBack.inert = !detail;
+  projectInfo.inert = !detail || Boolean(book) || a5Detail;
+  projectTitle.inert = !detail || a5Detail;
+  detailBack.inert = !detail || a5Detail;
   name.inert = detail;
   cv.inert = detail;
   intro.inert = detail;
@@ -214,7 +220,7 @@ function render(next, moveFocus = false) {
   showSlide(selected);
   schedule();
 
-  if (moveFocus && (active?.closest('[inert]') || active === document.body)) {
+  if (moveFocus && !a5Detail && (active?.closest('[inert]') || active?.closest('.a5-case') || active === document.body)) {
     const target = { home: categoryNav, formats: formatNav, projects: projectNav }[view];
     focusTimer = setTimeout(() => {
       (detail ? projectTitle : target?.querySelector('a, button') || formatNav.querySelector('a'))?.focus({ preventScroll: true });
@@ -621,8 +627,9 @@ window.addEventListener('popstate', () => render(readRoute(), true));
 document.addEventListener('visibilitychange', schedule);
 motion.addEventListener('change', () => { paused = motion.matches; if (motion.matches) opening.cancel(); schedule(); });
 document.addEventListener('keydown', (event) => {
-  if (cvDialog.open || books.zoom.open || !route || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+  if (cvDialog.open || books.zoom.open || a5.dialog.open || !route || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
   if (event.key === 'Escape') back();
+  if (page.hasAttribute('data-a5')) return;
   if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
     const direction = event.key === 'ArrowLeft' ? -1 : 1;
     if (page.hasAttribute('data-book')) {
