@@ -1,4 +1,4 @@
-import { createA5Case, isA5 } from './a5-case.js?v=2';
+import { createA5Case, isA5 } from './a5-case.js?v=3';
 import { categories, normalize } from './admin/model.js';
 import { bookFor, brandbookGallery } from './brandbooks.js?v=1';
 import { createOpening } from './opening.js?v=9';
@@ -27,7 +27,7 @@ const cvDialog = document.querySelector('#cv');
 const detailBack = document.querySelector('.detail-back');
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const books = brandbookGallery(motion);
-const a5 = createA5Case(document.querySelector('#a5-case'), motion);
+const a5 = createA5Case(document.querySelector('#a5-case'), motion, field);
 const opening = createOpening({
   page, field, motion, selectSlide: showSlide,
   onLanding: (finalSlide) => {

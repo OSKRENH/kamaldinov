@@ -20,7 +20,7 @@
   top: var(--cursor-y, 50%);
   transform: translate(-50%, -50%);
   font-family: 'LT Superior', Arial, sans-serif;
-  font-size: clamp(15px, 1.5vw, 26px);
+  font-size: var(--site-text);
   font-weight: 400;
   line-height: 1;
   color: var(--gallery-ink, #111);

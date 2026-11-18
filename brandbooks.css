@@ -3,8 +3,6 @@
 [data-book] .project-info { visibility: hidden; }
 
 [data-book] { background: #f3f2ee; }
-[data-book] .project-title,
-[data-book] .top-action { font-size: clamp(26px, 3.2vw, 62px); }
 
 .brandbook {
   --page-gap: clamp(12px, 2vw, 34px);
@@ -13,7 +11,6 @@
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto auto;
   gap: 14px;
-  font-size: 13px;
   animation: book-arrive 520ms var(--ease) both;
 }
 @keyframes book-arrive {
@@ -68,7 +65,6 @@
   object-fit: contain;
   box-shadow: 0 3px 12px rgb(30 26 15 / .14);
 }
-.book-neighbor span { font-size: 18px; }
 .book-neighbor:focus-visible { opacity: 1; }
 @media (hover: hover) and (pointer: fine) {
   .book-neighbor:enabled:hover { opacity: 1; transform: translateY(-4px); }
@@ -145,8 +141,6 @@
 .book-zoom img { display: block; min-width: 1100px; width: 100%; height: auto; }
 
 @media (max-aspect-ratio: 1/1) {
-  [data-book] .project-title,
-  [data-book] .top-action { font-size: clamp(22px, 7vw, 40px); }
   .brandbook {
     --page-gap: 6px;
     inset-block-start: max(104px, 15dvh);
