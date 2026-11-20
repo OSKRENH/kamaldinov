@@ -5,6 +5,26 @@ import { createOpening } from './opening.js?v=9';
 import { matchGalleryInk } from './gallery-ink.js?v=1';
 import { createGalleryInteractions } from './gallery-interactions.js?v=2';
 
+const CASE_INDEX = new Map([["Spentys Playbook",0],["The 5 Secrets of Financial Health and Wellness",1],["Portland",2],["Jabali ISR Technical Specifications",3],["Seervision Manual",4],["3 Crucial Tips for Recruiting in the Insurance Industry",5],["State of Account-Based Sales Development Report",6],["SU Ecosystem",7],["Artificial Intelligence, Big Data, Machine Learning, and Deep Learning",8],["SU Membership",9],["CCSA Report",10],["Music Theory for Electronic Musicians Book",11],["FLAT",12],["ITM Brand",13],["Пополам",14]]);
+const caseViewer = document.querySelector('#case-viewer');
+const caseFrame = document.querySelector('#case-frame');
+function updateCaseViewer(project) {
+  const index = project && CASE_INDEX.get(project.title);
+  if (index === undefined) {
+    caseViewer.hidden = true;
+    caseFrame.removeAttribute('src');
+    return false;
+  }
+  const destination = new URL('./cases/index.html?embedded=1#/' + index + '/0', import.meta.url).href;
+  caseViewer.hidden = false;
+  if (caseFrame.src !== destination) caseFrame.src = destination;
+  caseFrame.title = project.title + ' — интерактивный кейс';
+  return true;
+}
+window.addEventListener('message', (event) => {
+  if (event.origin === location.origin && event.source === caseFrame.contentWindow && event.data?.type === 'kamaldinov:close-case') back();
+});
+
 const page = document.querySelector('#portfolio');
 const field = document.querySelector('.image-field');
 const progressFill = field.querySelector('.gallery-progress-fill');
@@ -177,7 +197,10 @@ function render(next, moveFocus = false) {
   const detail = view === 'detail';
   const active = document.activeElement;
   const a5Detail = detail && isA5(project);
-  const book = detail && !a5Detail ? bookFor(project) : null;
+  const caseDetail = detail && !a5Detail && CASE_INDEX.has(project.title);
+  const book = detail && !a5Detail && !caseDetail ? bookFor(project) : null;
+  page.toggleAttribute('data-case', caseDetail);
+  updateCaseViewer(caseDetail ? project : null);
   page.toggleAttribute('data-a5', a5Detail);
   if (a5Detail) a5.open(moveFocus);
   else a5.close();
@@ -192,9 +215,9 @@ function render(next, moveFocus = false) {
   categoryNav.inert = detail || (view === 'projects' && !directProjects);
   formatNav.inert = view !== 'formats' && !(view === 'projects' && !directProjects);
   projectNav.inert = view !== 'projects';
-  projectInfo.inert = !detail || Boolean(book) || a5Detail;
-  projectTitle.inert = !detail || a5Detail;
-  detailBack.inert = !detail || a5Detail;
+  projectInfo.inert = !detail || Boolean(book) || a5Detail || caseDetail;
+  projectTitle.inert = !detail || a5Detail || caseDetail;
+  detailBack.inert = !detail || a5Detail || caseDetail;
   name.inert = detail;
   cv.inert = detail;
   intro.inert = detail;
@@ -629,7 +652,7 @@ motion.addEventListener('change', () => { paused = motion.matches; if (motion.ma
 document.addEventListener('keydown', (event) => {
   if (cvDialog.open || books.zoom.open || a5.dialog.open || !route || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
   if (event.key === 'Escape') back();
-  if (page.hasAttribute('data-a5')) return;
+  if (page.hasAttribute('data-a5') || page.hasAttribute('data-case')) return;
   if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
     const direction = event.key === 'ArrowLeft' ? -1 : 1;
     if (page.hasAttribute('data-book')) {
